@@ -1,0 +1,14 @@
+
+## PCA 3D Projection Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+ if(is.null(r_data$pca)) return () 
+    projection <- as.data.frame(r_data$pca$x)
+    if(ncol(projection) < 3) return()
+    if(!is.null(plot_specs$info)){
+        threejs::scatterplot3js(projection[,1:3], color = plot_specs$color, labels = rownames(projection), label.margin="150px 150px 150px 150px", size = 1.2, renderer = "canvas")
+    } else{
+        threejs::scatterplot3js(projection[,1:3], color = "grey", labels = rownames(projection), label.margin="150px 150px 150px 150px", size = 1.2, renderer = "canvas")
+    }
+```
+

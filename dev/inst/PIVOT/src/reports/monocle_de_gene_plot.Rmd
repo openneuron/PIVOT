@@ -1,0 +1,24 @@
+
+# Monocle DE Gene Expression Plot: `r r_data$monocle_gene`
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+    d<- as.data.frame(t(r_data$df[r_data$monocle_gene,])) %>% tibble::rownames_to_column()
+    colnames(d) <- c("sample", "expression_level")
+    
+    if(!is.null(r_data$group)) {
+        d$group = r_data$group
+    }  
+    if(!is.null(r_data$batch)) {
+        d$batch = r_data$batch
+    }  
+    if(!is.null(r_data$community)) {
+        d$community = r_data$community
+    } 
+
+    if(is.null(input$monocle_gene_plt_type) || input$monocle_gene_plt_type == "group") {
+        feature_super_plot(d, r_data$monocle_gene, plot_group = "group", style = input$monocle_gene_plt_style, legend_pos = "top")
+    } else if(input$monocle_gene_plt_type == "batch") {
+        feature_super_plot(d, r_data$monocle_gene, plot_group = "batch", style = input$monocle_gene_plt_style, legend_pos = "top")
+    }
+```
+

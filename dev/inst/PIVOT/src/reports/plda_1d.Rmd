@@ -1,0 +1,29 @@
+
+## Penalized LDA Projection Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+ if(is.null(r_data$plda)) return (data.frame(x = 0) %>% ggvis(~x)) 
+        if(is.null(input$plda_1d_plt_type) || is.null(input$plda_1d_plt_dim) || is.null(input$plda_1d_step)) return()
+        projection <- as.data.frame(r_data$plda$proj) 
+        group_color <- get_color_vector(r_data$group, pal = group_pal$val, maxCol = length(unique(r_data$group)))
+        cols<-unique(group_color)
+        names(cols) <- unique(r_data$group)
+
+        plda_1d_tmp <- projection %>% 
+            ggvis(x = prop("x", as.symbol(input$plda_1d_plt_dim))) %>%
+            add_axis("x", title = input$plda_1d_plt_dim) %>% 
+            set_options(width = 450, height = 300) %>%
+            group_by(group)
+        
+        if(input$plda_1d_plt_type == "density") {
+            plda_1d_tmp %>% layer_densities(adjust = input$plda_1d_step, fill = ~group) %>%
+                scale_nominal("fill", range = unique(group_color)) %>%
+                add_legend("fill", title = "Group")
+        } else {
+            plda_1d_tmp %>% layer_histograms(fill = ~group) %>%
+                scale_nominal("fill", range = unique(group_color)) %>%
+                add_legend("fill", title = "Group") 
+        }
+
+```
+

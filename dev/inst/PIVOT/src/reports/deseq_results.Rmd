@@ -1,0 +1,32 @@
+
+# DESeq Differential Expression Analysis Results
+
+> M. I. Love, W. Huber, S. Anders: Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology 2014, 15:550.
+
+## DESeq Result Table
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+if(is.null(r_data$deseq_results)) return()
+    tbl<-as.data.frame(r_data$deseq_results)
+    if(nrow(tbl) == 0) return()
+    DT::datatable(tbl, selection = 'single', options = list(scrollX = TRUE, scrollY = "250px", searching=T, order = list(list(7, 'asc')) , orderClasses = T))
+```
+
+### Summary
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+    if(is.null(r_data$deseq_results)) return()
+    sm <- capture.output(DESeq2::summary.DESeqResults(r_data$deseq_results))
+    
+```
+
+* `r paste0("Total number of significant genes: ", sum(r_data$deseq_results$padj < input$deseq_alpha, na.rm = T), ".")`
+    
+* `r sm[4]`
+    
+* `r sm[5]`
+    
+* `r sm[6]`
+    
+* `r paste(sm[7], sm[8])`
+

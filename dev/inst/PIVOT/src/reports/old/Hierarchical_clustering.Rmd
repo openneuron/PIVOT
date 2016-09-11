@@ -1,0 +1,42 @@
+
+# Hierarchical Clustering
+
+**Distance measure**: `r input$hc_dist_method`
+
+**Agglomeration method**: `r input$hc_agglo_method`
+
+## Base Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+    par(mar=c(6.1, 5.1, 5.1, 8.1), xpd=TRUE)
+    
+    if(is.null(data0()) || is.null(hclust0())) return ()
+    hc0 <- hclust0()
+    # get max height of the tree, this will be used to adjust the group bar height
+    max_height <- max(hc0$height)
+    hc1 <- hc0 %>% as.dendrogram()
+    if(!is.null(plot_specs$info)) {
+            orderedColor <- plot_specs$color[order.dendrogram(hc1)]
+            labels_colors(hc1) <- orderedColor
+            hc1 <- assign_values_to_leaves_nodePar(hc1, 1, "lab.cex")
+            par(oma = c(4, 1, 1, 1))
+            plot(hc1)
+            par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+            colored_bars(orderedColor, hc1, y_scale = max_height/8, rowLabels = input$coloring_type)
+            legend("topright", legend = unique(plot_specs$info), inset=c(-0.1,0), bty="n", fill = unique(plot_specs$color), text.col = unique(plot_specs$color), border = FALSE, y.intersp = 2)
+    } else
+        plot(hc1)
+```
+
+
+## DendroNetwork
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+if(is.null(data0()) || is.null(hclust0())) return ()
+    Root <- hclust0()
+    if(!is.null(plot_specs$info)) {
+                dendroNetwork(Root, fontSize = 15, textColour = plot_specs$color, treeOrientation = input$hc_dd_ori, linkColour = 'navyblue', nodeColour = 'grey', textOpacity = 1, opacity = 1,  zoom = T, linkType = input$hc_dd_link_type)
+    } else {
+        dendroNetwork(Root, fontSize = 15, treeOrientation = input$hc_dd_ori, linkColour = 'navyblue', nodeColour = 'grey', textOpacity = 1, opacity = 1, zoom = T, linkType = input$hc_dd_link_type)
+    }  
+```

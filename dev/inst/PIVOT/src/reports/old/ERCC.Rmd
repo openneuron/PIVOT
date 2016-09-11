@@ -1,0 +1,63 @@
+
+# ERCC
+
+## ERCC Data Table
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+    if(is.null(ercc$df_wt_mol)) return()
+    DT::datatable(ercc$df_wt_mol, options = list(scrollX = TRUE, scrollY = "400px", lengthMenu = c(20, 50, 100)))
+
+```
+
+
+## Detection Assessment
+
+### % detected vs expected
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+    if(is.null(ercc$sorted)) return()
+    glm.out = glm(PercentDetected ~ Log10molecules, family=binomial(logit), data=ercc$sorted)
+    y_pred <-predict(glm.out, newdata=data.frame(Log10molecules = 0), type = "response")
+    # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    # FOR THE MODEL FIT, IT WOULD BE HELPFUL TO COMPUTE THE Y INTERCEPT, GIVEN AN X INTERCEPT OF 1.0.
+    # IN MY CASE, I JUST SET THE Y INTERCEPT MANUALLY (BY EYE) TO BE 0.635.
+    ggplot(ercc$sorted, aes(molecules, PercentDetected)) + 
+        scale_x_log10() + 
+        xlab("Expected Number Molecules") + 
+        ylab("Fraction of samples detecting gene (>= 1 read)") + 
+        theme_classic() + 
+        geom_hline(yintercept=y_pred, color="gray") + 
+        geom_vline(xintercept=1, color="gray", linetype="longdash") + 
+        stat_smooth(method="glm", family="binomial", color="dodgerblue2", fill="lightgray") + 
+        geom_point(size=2) 
+```
+
+
+----
+
+### Summary of Model Fit
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+    if(is.null(ercc$sorted)) return()
+    summary(ercc_glm())
+```
+
+
+## ERCC Distribution
+
+### Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+    if(is.null(ercc$df_wt_mol)) return()
+    plotERCCDistribution(ercc$df_wt_mol)
+```
+
+
+----
+
+### Coefficient of variation
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+    if(is.null(ercc$df_wt_mol)) return()
+    DT::datatable(erccCv(ercc$df_wt_mol))
+```

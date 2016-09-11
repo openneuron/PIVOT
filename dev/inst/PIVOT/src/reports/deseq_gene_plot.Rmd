@@ -1,0 +1,21 @@
+
+# DESeq Gene Expression Plot: `r r_data$dds_gene`
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+
+    if(is.null(input$deseq_gene_plt_type) || input$deseq_gene_plt_type == "group") {
+        d <- DESeq2::plotCounts(r_data$dds, gene=r_data$dds_gene, intgroup="group", returnData=TRUE)
+        if(!is.null(input$deseq_gene_plt_all) && input$deseq_gene_plt_all) {
+        } else {
+            d <- subset(d, group %in% c(input$deseq_group1, input$deseq_group2))
+        }
+        colnames(d) <- c("expression_level", "group")
+        feature_super_plot(d, r_data$dds_gene, plot_group = "group", style = input$deseq_gene_plt_style, legend_pos = "top")
+
+    } else if(input$deseq_gene_plt_type == "batch") {
+        d <- DESeq2::plotCounts(r_data$dds, gene=r_data$dds_gene, intgroup="batch", returnData=TRUE)
+        colnames(d) <- c("expression_level", "batch")
+        feature_super_plot(d, r_data$dds_gene, plot_group = "batch", style = input$deseq_gene_plt_style, legend_pos = "top")
+    }
+```
+

@@ -1,0 +1,35 @@
+
+## T-SNE 1D Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+ if(is.null(data0()) || is.null(tsne_1d())) 
+            return (data.frame(x = 0) %>% ggvis::ggvis(~x)) 
+        projection <- data.frame(tsne_1d()$Y, r_data$sample_name)
+        colnames(projection) <- c("D1", "rowname")
+        
+        if(!is.null(plot_specs$info)){
+            projection <- cbind(projection, group = factor(plot_specs$info, levels = unique(plot_specs$info)))
+        }
+        tsne_1d_tmp <- projection %>% 
+            ggvis::ggvis(~D1) %>%
+            add_axis("x", title = "D1") %>% 
+            set_options(width = 450, height = 300)
+        
+        if(input$tsne_1d_plt_type == "density") {
+            layer_func <- function(...){layer_densities(adjust = input$tsne_1d_step, ...)}
+        } else {
+            layer_func <- layer_histograms
+        }
+        
+        if(!is.null(plot_specs$info)){
+            tsne_1d_tmp %>% 
+                group_by(group) %>%
+                layer_func(fill = ~group) %>%
+                scale_nominal("fill", range = unique(plot_specs$color)) %>%
+                add_legend("fill", title = input$coloring_type)
+        } else {
+            tsne_1d_tmp %>% 
+                layer_func()
+        }
+```
+

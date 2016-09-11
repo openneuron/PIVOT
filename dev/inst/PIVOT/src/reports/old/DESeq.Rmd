@@ -1,0 +1,42 @@
+
+# DESeq Differential Expression Analysis
+
+> M. I. Love, W. Huber, S. Anders: Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology 2014, 15:550.
+
+## DESeq Result Table
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+if(is.null(r_data$deseq_results)) return()
+    tbl<-as.data.frame(r_data$deseq_results)
+    if(nrow(tbl) == 0) return()
+    DT::datatable(tbl, selection = 'single', options = list(scrollX = TRUE, scrollY = "210px", searching=F, order = list(list(6, 'asc')) , orderClasses = T))
+```
+
+### Summary
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+    if(is.null(r_data$deseq_results)) return()
+    sm <- capture.output(summary(r_data$deseq_results))
+    
+```
+
+* `r paste0("Total number of significant genes: ", sum(r_data$deseq_results$padj < input$deseq_alpha, na.rm = T), ".")`
+    
+* `r sm[4]`
+    
+* `r sm[5]`
+    
+* `r sm[6]`
+    
+* `r paste(sm[7], sm[8])`
+
+## MA Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+    if(input$deseq_ma_shrunk == "shrunken") {
+        plotMA(r_data$deseq_results, main="DESeq2", ylim=c(-2,2))
+    } else {
+        plotMA(r_data$deseq_results, MLE=TRUE, main="unshrunken LFC", ylim=c(-2,2))
+    }
+```
+
