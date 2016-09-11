@@ -1,0 +1,29 @@
+For Mac OSX > 10.9:
+1. If you don’t have X11 on your mac, download the package below and install
+http://xquartz.macosforge.org/downloads/SL/XQuartz-2.7.8.dmg
+
+2. If you don’t have gfortran on your mac, please open a terminal and copy and paste the following commands, press enter.
+sudo curl -O http://r.research.att.com/libs/gfortran-4.8.2-darwin13.tar.bz2
+sudo tar fvxz gfortran-4.8.2-darwin13.tar.bz2 -C /
+
+3. Make sure you have R version >= 3.2.3. If not, please go to 
+https://cran.r-project.org/bin/macosx/
+Download and install the latest R.
+
+4. The report feature in PIVOT require pandoc package to be installed in your system. Download link: https://github.com/jgm/pandoc/releases/download/1.15.1/pandoc-1.15.1-osx.pkg. PIVOT will still run if you don’t have it, but the report module will not be available.
+
+5. PIVOT depends on many R packages, such as 'SCDE', 'Monocle' and ’Seurat'. The PIVOT_installer (or install_script.R) provides an easy way to automatically download all these packages for you. You can double click the installer to start the installation, or source the install_script.R file and use command "installAll()".
+
+
+You can use the following commands to launch PIVOT in R:
+
+library(PIVOT) # load library PIVOT
+pivot() # The launch command
+
+
+Junhyong Kim Lab
+University of Pennsylvania
+2015, 2016
+
+
+
