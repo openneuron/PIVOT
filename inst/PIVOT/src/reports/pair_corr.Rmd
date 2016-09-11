@@ -1,0 +1,25 @@
+
+# Pairwise Correlations Scatterplot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 10}
+    if(is.null(input$run_corr) || input$run_corr == 0) return()
+    if(is.null(r_data$raw)) return ()
+    if(is.null(r_data$group)) {
+        groups <- rep("samples", ncol(r_data$raw))
+    } else {
+        groups <- r_data$group
+    }
+    r_data$cfm<-calculate.crossfit.models(r_data$raw, groups, n.cores = 1, threshold.segmentation = TRUE, verbose = 1)
+        
+    if(is.null(input$group_for_corr) || input$group_for_corr == "all") {
+        ids <- colnames(r_data$raw)
+        groups <- rep("samples", ncol(r_data$raw))
+    } else {
+        ids <- names(r_data$group)[which(r_data$group == input$group_for_corr)]
+        groups <- r_data$group
+    }
+            
+    scde_pair_plot(r_data$raw, groups, r_data$cfm, ids)
+        
+```
+

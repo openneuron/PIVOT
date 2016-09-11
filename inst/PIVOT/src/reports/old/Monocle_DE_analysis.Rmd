@@ -1,0 +1,23 @@
+
+# Monocle Differential Expression Analysis
+
+> Cole Trapnell and Davide Cacchiarelli et al (2014): The dynamics and regulators of cell fate decisions are revealed by pseudo-temporal ordering of single cells. Nature Biotechnology
+
+## Test Result
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+if(is.null(r_data$monocle_results)) return()
+    if(input$monocle_cuttbl) {
+        tbl <- subset(r_data$monocle_results, qval <= input$monocle_alpha) 
+    } else {
+        tbl <- r_data$monocle_results
+    }
+    if(nrow(tbl) == 0) return()
+    DT::datatable(tbl, selection = 'single', options = list(
+        scrollX = T, scrollY = "400px", lengthMenu = c(20, 50, 100), order = list(list(2, 'asc')), orderClasses = T
+    ))
+```
+
+
+* `r paste0("Total number of significant genes: ", sum(r_data$monocle_results$qval < input$monocle_alpha, na.rm = T), ".")`
+    

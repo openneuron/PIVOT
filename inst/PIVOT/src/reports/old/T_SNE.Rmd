@@ -1,0 +1,81 @@
+
+# T-SNE
+
+## 1D T-SNE
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+
+if(is.null(data0()) || is.null(tsne_1d())) 
+            return (data.frame(x = 0) %>% ggvis::ggvis(~x)) 
+        projection <- data.frame(tsne_1d()$Y, r_data$sample_name)
+        colnames(projection) <- c("D1", "rowname")
+        
+        if(!is.null(plot_specs$info)){
+            projection <- cbind(projection, group = factor(plot_specs$info, levels = unique(plot_specs$info)))
+        }
+        tsne_1d_tmp <- projection %>% 
+            ggvis::ggvis(~D1) %>%
+            add_axis("x", title = "D1") %>% 
+            set_options(width = 450, height = 300)
+        
+        if(!is.null(plot_specs$info)){
+            tsne_1d_tmp %>% 
+                group_by(group) %>%
+                layer_densities(adjust = input$tsne_1d_step, fill = ~group) %>%
+                scale_nominal("fill", range = unique(plot_specs$color)) %>%
+                add_legend("fill", title = input$coloring_type) %>%
+                bind_shiny("tsne_1d")
+        } else {
+            tsne_1d_tmp %>% 
+                layer_densities(adjust = input$tsne_1d_step) %>%
+                bind_shiny("tsne_1d")
+        }
+
+```
+
+
+## 2D T-SNE
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+if(is.null(data0()) || is.null(tsne_2d())) return (data.frame(x = 0, y = 0) %>% ggvis::ggvis(~x, ~y)) 
+    
+    projection <- data.frame(tsne_2d()$Y, r_data$sample_name)
+    colnames(projection) <- c("D1", "D2", "rowname")
+    
+    if(!is.null(plot_specs$info)){
+        projection <- cbind(projection, group = factor(plot_specs$info, levels = unique(plot_specs$info)))
+    }
+    tsne_2d_tmp <- projection %>% 
+        ggvis::ggvis(~D1, ~D2, key := ~rowname) %>%
+        add_tooltip(d2_tooltip, "hover") %>%
+        add_axis("x", title = "D1") %>% 
+        add_axis("y", title = "D2") %>%
+        set_options(width = 450, height = 300)
+    
+    if(!is.null(plot_specs$info)){
+        tsne_2d_tmp %>% 
+            layer_points(fill = ~group, stroke:= "grey", size := 50, size.hover := 200, fillOpacity := 0.6, fillOpacity.hover := 0.9, stroke.hover := "orange") %>% 
+            add_legend("fill", title = input$coloring_type) %>%
+            scale_nominal("fill", range = unique(plot_specs$color)) %>% 
+            bind_shiny("tsne_2d")
+    } else {
+        tsne_2d_tmp %>% 
+            layer_points(fill := "steelBlue", stroke:= "grey", size := 50, size.hover := 200, fillOpacity := 0.6, fillOpacity.hover := 0.9, stroke.hover := "orange")%>% 
+            bind_shiny("tsne_2d")
+    }
+```
+
+
+## 3D T-SNE
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+    if(is.null(data0())|| is.null(tsne_3d())) return () 
+    projection <- as.data.frame(tsne_3d()$Y)
+    colnames(projection) <- c("D1", "D2", "D3")
+    if(!is.null(plot_specs$info))
+    {
+        scatterplot3js(projection[,1:3], color = plot_specs$color, labels = r_data$sample_name, label.margin="150px 150px 150px 150px", size = 1.2, renderer = "canvas")
+    } else{
+        scatterplot3js(projection[,1:3], color = "grey", labels = r_data$sample_name, label.margin="150px 150px 150px 150px", size = 1.2, renderer = "canvas")
+    }
+```    

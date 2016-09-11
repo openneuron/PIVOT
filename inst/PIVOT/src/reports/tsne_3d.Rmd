@@ -1,0 +1,15 @@
+
+## T-SNE 3D Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+ if(is.null(data0())|| is.null(tsne_3d())) return () 
+    projection <- as.data.frame(tsne_3d()$Y)
+    colnames(projection) <- c("D1", "D2", "D3")
+    if(!is.null(plot_specs$info))
+    {
+        threejs::scatterplot3js(projection[,1:3], color = plot_specs$color, labels = r_data$sample_name, label.margin="150px 150px 150px 150px", size = 1.2, renderer = "canvas")
+    } else{
+        threejs::scatterplot3js(projection[,1:3], color = "grey", labels = r_data$sample_name, label.margin="150px 150px 150px 150px", size = 1.2, renderer = "canvas")
+    }
+```
+

@@ -1,0 +1,25 @@
+
+# Sample/Feauture Basic Statistics
+
+## Sample Stats Table
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+if(is.null(r_data$cellset)) return()
+    DT::datatable(as.data.frame(pData(r_data$cellset)), selection = 'single', options = list(
+        scrollX = T, scrollY = "400px", lengthMenu = c(20, 50, 100)
+    )
+    )
+
+```
+
+## Feature Stats Table
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+     if(is.null(r_data$cellset)) return()
+    ftbl <-as.data.frame(fData(r_data$cellset))
+    ftbl <- ftbl[, -which(names(ftbl) %in% c("use_for_ordering", "gene_short_name"))]
+    DT::datatable(ftbl, selection = 'single', options = list(
+        scrollX = T, scrollY = "400px", lengthMenu = c(20, 50, 100)
+    )
+    )
+```

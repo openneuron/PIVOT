@@ -1,0 +1,28 @@
+
+## T-SNE 2D Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+projection <- data.frame(tsne_2d()$Y, r_data$sample_name)
+    colnames(projection) <- c("D1", "D2", "rowname")
+    
+    if(!is.null(plot_specs$info)){
+        projection <- cbind(projection, group = factor(plot_specs$info, levels = unique(plot_specs$info)))
+    }
+    tsne_2d_tmp <- projection %>% 
+        ggvis::ggvis(~D1, ~D2, key := ~rowname) %>%
+        add_tooltip(d2_tooltip, "hover") %>%
+        add_axis("x", title = "D1") %>% 
+        add_axis("y", title = "D2") %>%
+        set_options(width = 450, height = 300)
+    
+    if(!is.null(plot_specs$info)){
+        tsne_2d_tmp %>% 
+            layer_points(fill = ~group, stroke:= "grey", size := 50, size.hover := 200, fillOpacity := 0.6, fillOpacity.hover := 0.9, stroke.hover := "orange") %>% 
+            add_legend("fill", title = input$coloring_type) %>%
+            scale_nominal("fill", range = unique(plot_specs$color))
+    } else {
+        tsne_2d_tmp %>% 
+            layer_points(fill := "steelBlue", stroke:= "grey", size := 50, size.hover := 200, fillOpacity := 0.6, fillOpacity.hover := 0.9, stroke.hover := "orange")
+    }
+```
+

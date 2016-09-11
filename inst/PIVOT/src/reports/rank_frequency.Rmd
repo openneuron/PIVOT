@@ -1,0 +1,12 @@
+
+# Rank Frequency
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+    if(is.null(r_data$df)) return ()
+    if(input$ercc_isolation) {
+        rf_data <- r_data$df[!(rownames(r_data$df) %in% ercc$features),]
+    } else {
+        rf_data <- r_data$df
+    }
+    rank_freq(rf_data, input$rf_logX, input$rf_logY)
+```

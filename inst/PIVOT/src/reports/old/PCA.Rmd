@@ -1,0 +1,135 @@
+
+# Principal Component Analysis
+
+## PCA Summary
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+    if(is.null(pca1())) return () 
+    DT::datatable(summary(pca1())$importance, options = list(scrollX = TRUE, scrollY = "210px"))
+```
+
+
+## Scree plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+    if(is.null(pca1())) return () 
+    vars() %>% 
+        ggvis::ggvis(~pcomp, ~variances) %>% 
+        layer_points(size := 80, size.hover:= 200, fillOpacity := 0.5, fillOpacity.hover := 0.5)%>%
+        layer_bars(fill := "gray", opacity := 0.8) %>%
+        add_tooltip(scree_tooltip, "hover") %>%
+        layer_lines(stroke := "grey") %>%
+        add_axis("x", title = "Principle Component") %>% 
+        set_options(width = 450, height = 350)
+```
+
+
+## 1D PCA
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+
+    if(is.null(pca1())) return (data.frame(x = 0) %>% ggvis::ggvis(~x)) 
+        projection <- as.data.frame(pca1()$x) 
+        if(!is.null(plot_specs$info)){
+            projection <- cbind(projection, group = factor(plot_specs$info, levels = unique(plot_specs$info)))
+        }
+        if(is.null(input$pca_1d_pc)) {
+            pca_1d_tmp <- projection %>% 
+                ggvis::ggvis(~PC1) %>%
+                add_axis("x", title = paste0("PC1", " (",round(varsExp()[1]*100, digits = 1), "%)")) %>% 
+                set_options(width = 450, height = 300)
+        } else {
+            pca_1d_tmp <- projection %>% 
+                ggvis::ggvis(x = prop("x", as.symbol(input$pca_1d_pc))) %>%
+                add_axis("x", title = paste0(input$pca_1d_pc, " (",round(varsExp()[as.numeric(gsub("PC","",input$pca_1d_pc))]*100, digits = 1), "%)")) %>% 
+                set_options(width = 450, height = 300)
+        }
+        
+        if(!is.null(plot_specs$info)){
+            pca_1d_tmp %>%
+                group_by(group) %>%
+                layer_densities(adjust = input$pca_1d_step, fill = ~group) %>%
+                scale_nominal("fill", range = unique(plot_specs$color)) %>%
+                add_legend("fill", title = input$coloring_type) %>%
+                bind_shiny("pca1_1d")
+        } else {
+            pca_1d_tmp %>% 
+                layer_densities(adjust = input$pca_1d_step) %>%
+                bind_shiny("pca1_1d")
+        }
+```
+
+
+## 2D PCA
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+ if(is.null(pca1())) return (data.frame(x = 0, y = 0) %>% ggvis::ggvis(~x, ~y))
+    
+    projection <- as.data.frame(pca1()$x)
+    
+    if(!is.null(plot_specs$info)){
+        projection <- cbind(projection, group = factor(plot_specs$info, levels = unique(plot_specs$info)))
+    }
+    if (is.null(projection$PC2)) return(data.frame(x = 0, y = 0) %>% ggvis::ggvis(~x, ~y))
+    if(is.null(input$pca_x)) {
+        pca_2d1_tmp <- projection %>% 
+            tibble::rownames_to_column() %>%
+            ggvis::ggvis(~PC1, ~PC2, key := ~rowname) %>%
+            add_tooltip(d2_tooltip, "hover") %>%
+            add_axis("x", title = paste0("PC1", " (",round(varsExp()[1]*100, digits = 1), "%)")) %>% 
+            add_axis("y", title = paste0("PC2", " (",round(varsExp()[2]*100, digits = 1), "%)")) %>%
+            set_options(width = 450, height = 300)
+    } else {
+        pca_2d1_tmp <- projection %>% 
+            tibble::rownames_to_column() %>%
+            ggvis::ggvis(x = prop("x", as.symbol(input$pca_x)), y = prop("y", as.symbol(input$pca_y)), key := ~rowname) %>%
+            add_tooltip(d2_tooltip, "hover") %>%
+            add_axis("x", title = paste0(input$pca_x, " (",round(varsExp()[as.numeric(gsub("PC","",input$pca_x))]*100, digits = 1), "%)")) %>% 
+            add_axis("y", title = paste0(input$pca_y, " (",round(varsExp()[as.numeric(gsub("PC","",input$pca_y))]*100, digits = 1), "%)")) %>%
+            set_options(width = 450, height = 300)
+    }
+    
+    if(!is.null(plot_specs$info)){
+        pca_2d1_tmp %>% 
+            layer_points(fill = ~group, stroke:= "grey", size := 50, size.hover := 200, fillOpacity := 0.6, fillOpacity.hover := 0.9, stroke.hover := "orange") %>% 
+            add_legend("fill", title = input$coloring_type) %>%
+            scale_nominal("fill", range = unique(plot_specs$color)) %>% 
+            bind_shiny("pca1_2d")
+    } else {
+        pca_2d1_tmp %>% 
+            layer_points(fill := "steelBlue", stroke:= "grey", size := 50, size.hover := 200, fillOpacity := 0.6, fillOpacity.hover := 0.9, stroke.hover := "orange")%>% 
+            bind_shiny("pca1_2d")
+    }
+```
+
+## 2D Biplot
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+   
+    if(is.null(pca1())) return () 
+    if(!is.null(plot_specs$info)){
+        groups <- factor(plot_specs$info, levels = unique(plot_specs$info))
+
+        ggbiplot(pca1(), groups = groups, ellipse = TRUE, circle = TRUE, varname.size = 3, labels.size=3) +
+            geom_point(aes(colour=groups), size = 3) +
+            scale_colour_manual(values = unique(plot_specs$color)) + 
+            theme(legend.direction = 'horizontal', legend.position = 'top')
+    } else {
+        ggbiplot(pca1(), ellipse = TRUE, circle = TRUE, varname.size = 3, labels.size=3) +
+            geom_point(size = 3) 
+    }
+    
+```
+
+## 3D PCA
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+    if(is.null(pca1())) return () 
+    projection <- as.data.frame(pca1()$x)
+    if(ncol(projection) < 3) return()
+    if(is.null(r_data$group) || length(r_data$group) == 0)
+    {
+        scatterplot3js(projection[,1:3], color = "grey", labels = rownames(projection), label.margin="150px 150px 150px 150px", size = 1.2, renderer = "canvas")
+    } else{
+        scatterplot3js(projection[,1:3], color = group_color(), labels = rownames(projection), label.margin="150px 150px 150px 150px", size = 1.2, renderer = "canvas")
+    }
+```    

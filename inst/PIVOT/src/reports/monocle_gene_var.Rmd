@@ -1,0 +1,11 @@
+
+## Monocle Gene Dispersion Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+
+    if(is.null(r_data$cellset)) return()
+    if(is.null(r_data$cellset@dispFitInfo[["blind"]])) return()
+    plot_ordering_genes(r_data$cellset)
+
+```
+

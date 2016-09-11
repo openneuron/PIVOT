@@ -1,0 +1,17 @@
+
+## Monocle Cell Trajectory Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+
+if(is.null(r_data$cellset) || is.null(pData(r_data$cellset)$State) || is.null(input$monocle_state_plt_color)){
+        return()
+    }
+    tree1 = ifelse(input$monocle_state_show %in% c("tree", "both"), T, F)
+    mst1 = ifelse(input$monocle_state_show %in% c("mst", "both"), T, F)
+    
+    s = input$monocle_state_gene_tbl_row_last_clicked
+    
+    plot_cell_trajectory(r_data$cellset,  color_by = input$monocle_state_plt_color, show_tree = tree1, show_backbone = mst1, markers = s)
+
+```
+

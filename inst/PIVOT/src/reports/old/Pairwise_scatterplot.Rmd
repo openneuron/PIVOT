@@ -1,0 +1,7 @@
+
+# Pairwise Scatterplot
+
+```{r, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 10}
+pair_corr(data0())
+```
+

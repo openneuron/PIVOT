@@ -1,0 +1,26 @@
+
+## Monocle Gene Clustering by Psudotemporal Expression Pattern
+
+### Clustering Results
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+    if(is.null(r_data$monocle_clusters)) return()
+    tbl <- r_data$monocle_clusters$tbl
+    DT::datatable(tbl, 
+                  options = list(
+                      scrollX = F, scrollY = "400px", lengthMenu = c(20, 50, 100)
+                  )
+    )
+```
+
+### Gene Heatmap
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 8}
+
+    if(is.null(r_data$monocle_clusters)) return()
+    ph_res <- r_data$monocle_clusters$hmap
+    grid::grid.rect(gp = grid::gpar("fill", col = NA))
+    grid::grid.draw(ph_res$gtable)
+
+```
+

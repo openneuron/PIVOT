@@ -1,0 +1,91 @@
+
+## Network Visualization of DE Genes
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 10}
+
+if(input$net_vis_type == "igraph") {
+    if(is.null(r_data$tf_de_tbl_vis) || nrow(r_data$tf_de_tbl_vis) ==0) return()
+    if(is.null(input$tf_interactome_selection)) return()
+    
+    if(input$tf_interactome_selection == "stringdb") {
+        if(is.null(r_data$stringdb_g)) return()
+        g0 <- r_data$stringdb_g
+    }
+    if(input$tf_interactome_selection == "reg") g0 <- r_data$reg_g
+    
+    tbl <- r_data$tf_de_tbl_vis
+    
+    if(nrow(tbl) <=input$tf_net_limit) 
+        row_limit <- nrow(tbl)
+    else
+        row_limit <- input$tf_net_limit
+    
+    tbl <- tbl[1:row_limit,]
+    
+    if(input$tf_interactome_selection == "stringdb") {
+        str_in <- r_data$string_meta$STRING_id[match(toupper(tbl$gene), r_data$string_meta$cap_name)]
+        cap_id <- r_data$string_meta$cap_name[match(toupper(tbl$gene), r_data$string_meta$cap_name)]
+        
+        tbl_in<-as.character(str_in[which(str_in %in% V(g0)$name)])
+        cap_id <-cap_id[which(str_in %in% V(g0)$name)]
+        tbl <- tbl[match(cap_id, toupper(tbl$gene)), ]
+    } 
+    
+    if(input$tf_interactome_selection == "reg"){
+        tbl_in <- r_data$feature_meta$cap_name[match(toupper(tbl$gene), r_data$feature_meta$cap_name)]
+        tbl_in<-as.character(tbl_in[which(tbl_in %in% V(g0)$name)])
+        tbl <- tbl[match(tbl_in, toupper(tbl$gene)), ]
+    }
+    
+  
+    tbl_nets <- igraph::induced_subgraph(g0, tbl_in)
+    
+    V(tbl_nets)$name <- as.character(tbl$gene[match(V(tbl_nets)$name, tbl_in)])
+    
+    range<-round(tbl$lfc_or_es[match(V(tbl_nets)$name, tbl$gene)])
+    
+    max_r <- max(range, na.rm = T)
+    min_r <- min(range, na.rm = T)
+    abs_max <- max(abs(max_r), abs(min_r))
+    colfunc<-colorRampPalette(c("royalblue","white","red"))
+    col=colfunc(abs_max * 2 + 1)
+    names(col) <- as.character(seq(-abs_max, abs_max, by = 1))
+    cols <- col[as.character(range)]
+    
+    lbl_size <- seq(0, 0.8, length = abs_max + 1)
+    
+    names(lbl_size) <- as.character(c(0:abs_max))
+    
+    V(tbl_nets)$label.cex = lbl_size[as.character(abs(range))] + 0.1 # give it a min so that no 0s
+    
+    V(tbl_nets)$color <- cols
+    V(tbl_nets)$size <- abs(tbl$gene_score[match(V(tbl_nets)$name, tbl$gene)]) # gene_score, or LFC
+    V(tbl_nets)$size[is.na(V(tbl_nets)$size)] <- 0
+    
+    if(input$tf_net_rm_isolates) {
+        tbl_nets <- igraph::delete.vertices(tbl_nets, which(degree(tbl_nets) == 0))
+    }
+    
+    if(input$tf_net_keep_module) {
+        modules <- igraph::decompose.graph(tbl_nets)
+        largest <- which.max(sapply(modules, vcount))
+        tbl_nets <- modules[[largest]]
+    }
+    
+    r_data$tf_tbl_net <- tbl_nets
+    
+    if(input$tf_net_add_label) {
+        igraph::plot.igraph(tbl_nets, layout = get(input$tf_net_layout))
+        legend("bottom", c("Upregulated in ES Cells", "Upregulated in fibroblasts"),
+        pch = 16, # gives the legend appropriate symbols (lines)
+        pt.cex = 2, 
+        horiz = T, x.intersp = 2,
+        col=c("blue","red"),
+        bty = "n") # gives the legend lines the correct color and width
+    } else {
+        igraph::plot.igraph(tbl_nets, vertex.label=NA, layout = get(input$tf_net_layout))
+    }
+}
+
+```
+

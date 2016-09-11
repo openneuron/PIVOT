@@ -1,0 +1,21 @@
+
+# Mann–Whitney U test
+
+## Test Result
+
+**`r paste("Mann–Whitney U test Results of", r_data$mww_group[1], "vs", r_data$mww_group[2])`**
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+if(is.null(r_data$mww_results)) return()
+    if(input$mww_cuttbl) {
+        tbl <- subset(r_data$mww_results, adjustedP <= input$mww_alpha)
+    } else {
+        tbl <- r_data$mww_results
+    }
+    if(nrow(tbl) == 0) return()
+    DT::datatable(tbl, selection = 'single', options = list(scrollX = TRUE, scrollY = "250px", searching=F, order = list(list(3, 'asc')) , orderClasses = T))
+```
+
+
+* `r paste0("Total number of significant genes: ", sum(r_data$mww_results$adjustedP < input$mww_alpha, na.rm = T), ".")`
+    
