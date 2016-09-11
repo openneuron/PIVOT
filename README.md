@@ -1,5 +1,4 @@
-# PIVOT
-Platform for Interactive analysis and Visualization Of Transcriptomics data
+# PIVOT: Platform for Interactive analysis and Visualization Of Transcriptomics data
 
 See http://kim.bio.upenn.edu/software/pivot.shtml for more details.
 
