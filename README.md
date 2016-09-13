@@ -1,6 +1,6 @@
 # PIVOT: Platform for Interactive analysis and Visualization Of Transcriptomics data
 
-See http://kim.bio.upenn.edu/software/pivot.shtml for more details.
+See http://kim.bio.upenn.edu/software/idv.shtml for more details.
 
 The package_for_install contains the latest good-to-use development version of this package. 
 
