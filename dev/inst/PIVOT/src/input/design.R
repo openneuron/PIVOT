@@ -86,6 +86,7 @@ clear_design <- function() {
     }
     plot_specs$info <- NULL
     
+    r_data$glb.meta <- data.frame(sample = colnames(r_data$glb.raw))
     r_data$group <- NULL
     r_data$glb.group <- NULL
     r_data$batch <- NULL
@@ -280,7 +281,7 @@ output$downloadGroup <- downloadHandler(
     }
 )
 # submit group (manual module)
-observeEvent(input$submit_design_info, {
+observeEvent(input$submit_design_manual, {
     if(dim(design_value$df)[1] == 0) {
         session$sendCustomMessage(type = "showalert", "Give me something!")
         return()
@@ -299,39 +300,12 @@ observeEvent(input$submit_design_info, {
         
         if(any(is.na(matched_sp))) # The user will have to re-specify the group information if the number of sample has changed. 
         {
-            session$sendCustomMessage(type = "showalert", "Please provide a group list for all your input samples. Some sample names in the current list do not match.")
+            session$sendCustomMessage(type = "showalert", "Please provide a meta table for all your input samples. Some sample names are not found.")
             return()
         }
         
-        if("group" %in% (input$design_info_compo)) {
-
-            sorted_group<-df_tmp$Group[matched_sp]
-            names(sorted_group) <- colnames(r_data$glb.raw)
-            
-            # Reset the group for analysis
-            if(length(unique(sorted_group)) < 2) {
-                session$sendCustomMessage(type = "showalert", "Seems only 1 group there!")
-                return()
-            } else {
-                r_data$glb.group <- sorted_group
-                r_data$group <- factor(sorted_group[which(names(sorted_group) %in% r_data$sample_name)])
-            }
-        }
-        
-        # Add batch info to global
-        if("batch" %in% (input$design_info_compo)) {
-            sorted_batch<-df_tmp$Group[matched_sp]
-            names(sorted_batch) <- colnames(r_data$glb.raw)
-            
-            # Reset the group for analysis
-            if(length(unique(sorted_batch)) < 2) {
-                session$sendCustomMessage(type = "showalert", "Seems only 1 batch there!")
-                return()
-            } else {
-                r_data$glb.batch <- sorted_batch
-                r_data$batch <- sorted_batch[which(names(sorted_batch) %in% r_data$sample_name)]
-            }
-        }
+        # Other sanity checks? Like cols contain NA, empty cols(only spaces), cols contain only one category?
+        r_data$glb.meta <- df_tmp
         
         incProgress(0.3, detail = "Updating metadata...")
         r_data <- init_meta(r_data, type = "sample")
@@ -374,7 +348,7 @@ observeEvent(input$clear_group_2, {
 })
 
 # Upload group info handler
-observeEvent(input$submit_design_info2, {
+observeEvent(input$submit_design_upload, {
     if(dim(design_upload$df)[1] == 0)
     {
         session$sendCustomMessage(type = "showalert", "Give me something!")
@@ -382,32 +356,20 @@ observeEvent(input$submit_design_info2, {
     }
     
     df_tmp <- design_upload$df
-    if(is.null(df_tmp$Sample)) {
-        session$sendCustomMessage(type = "showalert", "'Sample' column not found.")
+    # assign('df_tmp', df_tmp, env = .GlobalEnv)
+    # Take first column as sample column
+    sample_col <- df_tmp[,1] 
+    matched_sp <- match(colnames(r_data$glb.raw), sample_col) # If contain NA, some sample are not found in sample_col
+    if(any(is.na(matched_sp))) 
+    {
+        session$sendCustomMessage(type = "showalert", "Please provide a meta table for ALL your input samples. Some sample names are not found.")
         return()
     }
-    design_in_tbl <- c()
-    if(!is.null(df_tmp$Group)) {
-        design_in_tbl <- c(design_in_tbl, 'group')
-    } 
-    if(!is.null(df_tmp$Batch)) {
-        design_in_tbl <- c(design_in_tbl, 'batch')
-    }
-    if(length(design_in_tbl) == 0) {
-        session$sendCustomMessage(type = "showalert", "'Group' or 'Batch' column not found.")
-        return()
-    }
+    
     withProgress(message = 'Processing', value = 0, {
         incProgress(0.3, detail = "Adding design info...")
-        matched_sp <- match(colnames(r_data$glb.raw), df_tmp$Sample)
-        if(any(is.na(matched_sp))) # The user will have to re-specify the group information if the number of sample has changed. 
-        {
-            session$sendCustomMessage(type = "showalert", "Please provide a group list for all your input samples. Some sample names in the current list do not match.")
-            return()
-        }
-        
         if(input$sample_reorder) {
-            sp_ordered<-colnames(r_data$glb.raw)[match(df_tmp$Sample, colnames(r_data$glb.raw))]
+            sp_ordered<-colnames(r_data$glb.raw)[match(sample_col, colnames(r_data$glb.raw))]
             sp_ordered <- sp_ordered[!is.na(sp_ordered)]
             
             r_data$glb.raw <- r_data$glb.raw[sp_ordered]
@@ -416,40 +378,10 @@ observeEvent(input$submit_design_info2, {
             r_data$sample_name <- sp_ordered[which(sp_ordered %in% r_data$sample_name)]
             r_data$raw <- r_data$raw[r_data$sample_name]
             r_data$df <- r_data$df[r_data$sample_name]
-            r_data <- init_meta(r_data, type = "sample")
         }
+        # Other sanity checks? Like cols contain NA, empty cols(only spaces), cols contain only one category?
+        r_data$glb.meta <- df_tmp
         
-        # Add group info to global
-        if("group" %in% design_in_tbl) {
-            
-            sorted_group<-df_tmp$Group[match(colnames(r_data$glb.raw), df_tmp$Sample)]
-            names(sorted_group) <- colnames(r_data$glb.raw)
-            
-            # Reset the group for analysis
-            if(length(unique(sorted_group)) < 2) {
-                session$sendCustomMessage(type = "showalert", "Seems only 1 group there!")
-                return()
-            } else {
-                r_data$glb.group <- sorted_group
-                r_data$group <- factor(sorted_group[which(names(sorted_group) %in% r_data$sample_name)])
-            }
-        }
-        
-        # Add batch info to global
-        if("batch" %in% design_in_tbl) {
-            
-            sorted_batch<-df_tmp$Group[match(colnames(r_data$glb.raw), df_tmp$Sample)]
-            names(sorted_batch) <- colnames(r_data$glb.raw)
-            
-            # Reset the group for analysis
-            if(length(unique(sorted_batch)) < 2) {
-                session$sendCustomMessage(type = "showalert", "Seems only 1 batch there!")
-                return()
-            } else {
-                r_data$glb.batch <- sorted_batch
-                r_data$batch <- sorted_batch[which(names(sorted_batch) %in% r_data$sample_name)]
-            }
-        }
         incProgress(0.3, detail = "Updating metadata...")
         r_data <- init_meta(r_data, type = "sample")
         setProgress(1)
@@ -475,6 +407,31 @@ output$grp_submitted_img2 <- renderUI({
 
 
 ##### Group color #####
+get_brewer_set <- function(palette = c("sequential", "diverging", "qualitative")) {
+    match.arg(palette,
+              several.ok = TRUE)
+    
+    sequential_palette <- c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 
+                            'Oranges', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                            'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd')
+    names(sequential_palette) <- sequential_palette
+    diverging_palette <- c("BrBG", "PiYG", "PRGn", "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral")
+    names(diverging_palette) <- diverging_palette
+    qualitative_palette <- c('Accent','Dark2','Paired', 'Pastel1', 'Pastel2','Set1', 'Set2', 'Set3')
+    names(qualitative_palette) <- qualitative_palette
+    return_palette = list()
+    if("sequential" %in% palette) {
+        return_palette <- c(return_palette, as.list(sequential_palette))
+    }
+    if("diverging" %in% palette) {
+        return_palette <- c(return_palette, as.list(diverging_palette))
+    }
+    if("qualitative" %in% palette) {
+        return_palette <- c(return_palette, as.list(qualitative_palette))
+    }
+    return(return_palette)
+}
+
 get_color_vector <- function(labels, pal="Set1", maxCol=9)
 {
     unq <- unique(labels)

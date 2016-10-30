@@ -28,6 +28,14 @@
   font-style:oblique;
 }
 
+.param_setting_title {
+  font-size:15px;
+  font-weight: 600;
+  font-family:sans-serif;
+   padding: 5px 5px 5px 10px;
+  background-image: -webkit-linear-gradient(#91a9cb, #ffffff);
+}
+
 /* custom button text color*/
 .btn-success {
 	color:#fff;
@@ -221,7 +229,7 @@
 }
 
 .main-header .logo:hover::after{
-	content: ': Platform for Interactive analysis and Visualization Of Transcriptomics data, v1.04';
+	content: ': Platform for Interactive analysis and Visualization Of Transcriptomics data, v1.10';
 }
 
 

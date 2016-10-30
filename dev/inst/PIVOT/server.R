@@ -17,9 +17,8 @@ options(shiny.maxRequestSize=1000*1024^2)
 
 
 init_state <- function(r_data) {
-    
-    ################################ Count files processor ##################################
-    # r_data
+    ######### Base input reactive values ########    
+
     r_data$file_path <- NULL
     r_data$input_type <- NULL
     
@@ -35,30 +34,30 @@ init_state <- function(r_data) {
     
     r_data$glb.raw <- NULL # This raw counts are combined or loaded raw counts (not filtered)
     r_data$glb.df <- NULL # This is DESeq normalzied data (not filtered)
-    r_data$glb.group <- NULL
-    r_data$glb.batch <- NULL
-
-    r_data$norm_param <- NULL
-    
-    r_data$dds <- NULL
-    r_data$deseq_results <- NULL
-    r_data$deseq_group <- NULL
-    
     r_data$raw <- NULL # This raw is different from data_ed$raw, this one is filtered raw cnts.
     r_data$df <- NULL # This is the filtered DESeq normalized data
     
-    # These two (+ r_data$raw) serve as keys (and bridge) for subsetting/filtering purposes.
+    r_data$glb.meta <- NULL
+    r_data$glb.group <- NULL
+    r_data$glb.batch <- NULL
+    r_data$group <- NULL # Group info
+    r_data$batch <- NULL # Batch info
+    
     r_data$feature_list <- NULL # This contains the filtered feature list used for analysis, every time the user choose a different feature set, the analyzer will grab that set of data using this key
     r_data$sample_name <- NULL # This has same value as sample_key once analyze btn is pressed.
     
     r_data$feature_meta <- NULL
     r_data$sample_meta <- NULL
+
+    r_data$norm_param <- NULL
     
-    r_data$group <- NULL # Group info
-    r_data$batch <- NULL # Batch info
+    ###### Analysis reactive values #######
+    
+    r_data$dds <- NULL
+    r_data$deseq_results <- NULL
+    r_data$deseq_group <- NULL
     
     r_data$f_range <- NULL
-    
     
     r_data$pca <- NULL
     r_data$pca_var <- NULL
@@ -260,6 +259,35 @@ shinyServer(function(input, output, session) {
     
  
     ############# Final Data for analysis ##########
+    get_data_with_scale <- function(df, scale, ercc_iso = T, ercc = NULL) {
+        if(is.null(df) || is.null(scale)) return()
+        
+        log <- log10(df + 1) # global DESeq_log10
+        nm <- as.data.frame(t(scale(t(df)))) # global DESeq_normal
+        log_nm <- as.data.frame(t(scale(t(log10(df + 1))))) # global DESeq_log10_normal
+        
+        if(ercc_iso) {
+            if(scale == "normalized_cnts")
+                return(df[!(rownames(df) %in% ercc$features),])
+            else if(scale == "log10")
+                return(log[!(rownames(log) %in% ercc$features),])
+            else if(scale == "standardized")
+                return(nm[!(rownames(nm) %in% ercc$features),])
+            else if(scale == "log10_standardized")
+                return(log_nm[!(rownames(log_nm) %in% ercc$features),])
+        } else {
+            if(scale == "normalized_cnts")
+                return(df)
+            else if(scale == "log10")
+                return(log)
+            else if(scale == "standardized")
+                return(nm)
+            else if(scale == "log10_standardized")
+                return(log_nm)
+        }
+    }
+    
+    
     # This will return different normalized sets according to the user command
     data0 <- reactive({
         if(is.null(r_data$df)) return()

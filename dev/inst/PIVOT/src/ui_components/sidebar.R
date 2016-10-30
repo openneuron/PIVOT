@@ -121,15 +121,6 @@ sidebar <- dashboardSidebar(
                      )
     ),
     
-    conditionalPanel("input.tabs == 'hclust'",
-                     column(1),
-                     column(10,
-                            sidebarwell2(
-                                selectInput("hclust_package", "Plotting package", choices = list("Dendexdend" = "dendextend", "networkD3" = "networkD3"), selected = "dendextend")
-                            )
-                     )
-    ),
-    
     conditionalPanel("input.tabs == 'cor_ft'",
                      column(1),
                      column(10,

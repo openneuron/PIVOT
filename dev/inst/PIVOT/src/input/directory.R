@@ -146,6 +146,7 @@ observeEvent(input$submit_dir, {
         r_data$raw <- r_data$glb.raw
         r_data$df <- r_data$glb.df
         incProgress(0.2, detail = "Adding metadata...")
+        r_data$glb.meta <- data.frame(sample = r_data$sample_name)
         r_data <- init_meta(r_data)
         r_data <- update_history(r_data, NA, "Input", "Input counts directory", list(feature = r_data$feature_list, sample = r_data$sample_name, df = r_data$df), r_data$norm_param$method, r_data$norm_param)
         

@@ -87,7 +87,7 @@ body <- dashboardBody(
                                                "input.file_format == 'single'",
                                                wellPanel(
                                                    fluidRow(
-                                                       column(4, fileInput('file_single', 'Choose counts file', accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
+                                                       column(8, fileInput('file_single', 'Choose counts file', accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
                                                        column(4, 
                                                               a(id = "input_help_btn", icon("question-circle")),
                                                               shinyBS::bsModal(id = "input_help", title = "Input tips", trigger = "input_help_btn", size = "large", list(
@@ -211,7 +211,7 @@ body <- dashboardBody(
                                                       ),
                                                       hr(),
                                                       fluidRow(
-                                                          column(6, actionButton('submit_design_info', label = "Submit Design", class = "btn btn-primary")),
+                                                          column(6, actionButton('submit_design_manual', label = "Submit Design", class = "btn btn-primary")),
                                                           column(6, uiOutput("grp_submitted_img1"))
                                                       )
                                                 )        
@@ -247,7 +247,7 @@ body <- dashboardBody(
                                                       hr(),
                                                       checkboxInput("sample_reorder", "Reorder samples according to the design table.", value = F),
                                                       fluidRow(
-                                                          column(6, actionButton('submit_design_info2', label = "submit design", class = "btn btn-primary")),
+                                                          column(6, actionButton('submit_design_upload', label = "submit design", class = "btn btn-primary")),
                                                           column(6, uiOutput("grp_submitted_img2"))
                                                       )
                                                )

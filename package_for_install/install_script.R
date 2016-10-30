@@ -89,7 +89,7 @@ installAll <- function() {
         failed_pkg[[length(failed_pkg) + 1]] <- 'scde'
     }
 
-    useLocalPackage('PIVOT', '1.04', type = 'source')
+    useLocalPackage('PIVOT', '1.10', type = 'source')
     if(length(failed_pkg)) {
         msg<-do.call(paste,c(failed_pkg, sep = ", "))
         print(paste("Package", msg, "failed to be installed. Please try manually install missing packages and run the installer again."))
