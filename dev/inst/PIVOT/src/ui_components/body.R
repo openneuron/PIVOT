@@ -31,127 +31,108 @@ body <- dashboardBody(
                                    id = "input_tabset",
                                    ##################### File input module ###################
                                    tabPanel(
-                                       tags$b("File"),
+                                       tags$b("FILE"),
                                        value = "file_in",
-                                       wellPanel(
+                                       tags$div(tags$b("Input Method and Normalization Setting:"), class = "param_setting_title"),
+                                       fluidRow(
+                                           column(6,
+                                                  selectInput("file_format", label = "Input file type", choices = list("Counts Directory" = "dir", "Counts Table" = "single", "PIVOT State" = "state"),selected = "single")
+                                           ),
+                                           column(6, 
+                                                  uiOutput("proc_method_ui")
+                                           )
+                                       ),
+                                       uiOutput("deseq_threshold_ui"),
+                                       uiOutput("norm_text_ui"),
+                                       fluidRow(
+                                           column(6,
+                                                  uiOutput("gene_length_ui")
+                                           ),
+                                           column(6,
+                                                  uiOutput("norm_details_ui")
+                                           )
+                                       ),
+                                       tags$p(),
+                                       ##### count file input module #####
+                                       conditionalPanel(
+                                           "input.file_format == 'dir'",
+                                           tags$div(tags$b("Counts Directory Input:"), class = "param_setting_title"),
                                            fluidRow(
-                                               column(6,
-                                                      selectInput("file_format", label = "Input file type", choices = list("Counts Directory" = "dir", "Counts Table" = "single", "PIVOT State" = "state"),selected = "single")
+                                               column(5, shinyFiles::shinyDirButton('data_folder', 'Select Data Folder', 'Please select a folder', FALSE, class = "btn-info")),
+                                               column(2, 
+                                                      a(id = "directory_help_btn", icon("question-circle")),
+                                                      shinyBS::bsModal(id = "directory_help", title = "Input tips", trigger = "directory_help_btn", size = "large", list(
+                                                          tags$li("Accepts folder containing HTSeq/featureCounts/VERSE output."),
+                                                          tags$li("Counts files must contain the same feature set (Same number of rows, same rownames, multiple species not allowed)."),
+                                                          tags$li("You can use file filter to select files containing certain keywords"),
+                                                          tags$li("Example count file:"),
+                                                          br(),
+                                                          img(src = "exp_count_file.png", width = 150)
+                                                      ))      
                                                ),
-                                               column(6, 
-                                                      uiOutput("proc_method_ui")
+                                               column(5, verbatimTextOutput("data_folder_show"))
+                                           ),
+                                           shinyBS::tipify(
+                                               textInput("file_search", label = "File filter", value = ""), 
+                                               title = "use keywords (e.g. exon.cnt) to include desired count files only", placement = "bottom", options = list(container = "body")
+                                           ),
+                                           uiOutput("select_data")
+                                       ),
+                                       
+                                       ##### Single file module #####
+                                       conditionalPanel(
+                                           "input.file_format == 'single'",
+                                           tags$div(tags$b("Data Table Input:"), class = "param_setting_title"),
+                                           fluidRow(
+                                               column(8, fileInput('file_single', 'Choose counts file', accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
+                                               column(4, 
+                                                      a(id = "input_help_btn", icon("question-circle")),
+                                                      shinyBS::bsModal(id = "input_help", title = "Input tips", trigger = "input_help_btn", size = "large", list(
+                                                          tags$li("PIVOT only accepts .csv or .txt input."),
+                                                          tags$li("Feature names or sample names may be slightly modified to be valid R row/column names.")),
+                                                          tags$li("Rows must be features and columns must be samples."),
+                                                          tags$li("Negative values are not allowed."),
+                                                          tags$li("Example:"),
+                                                          img(src = "input_exp.png", width = 500)
+                                                      )
                                                )
                                            ),
-                                           uiOutput("deseq_threshold_ui"),
-                                           uiOutput("norm_text_ui"),
                                            fluidRow(
-                                               column(6,
-                                                      uiOutput("gene_length_ui")
-                                               ),
-                                               column(6,
-                                                      uiOutput("norm_details_ui")
+                                               column(9,
+                                                      wellPanel(
+                                                          checkboxInput('header_ct', 'Header', TRUE),
+                                                          radioButtons('sep_ct', 'Separator', c(Comma=',', Semicolon=';', Tab='\t', Space = ' '), selected = ',', inline = TRUE),
+                                                          fluidRow(
+                                                              column(6, selectInput('row_ct', 'Row names', choices = list("automatic" = "automatic", "first column" = "firstcol", "numbers" = "numbers"), selected = "firstcol"))
+                                                          ),
+                                                          radioButtons('quote_ct', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), selected = '"', inline = TRUE)
+                                                      )
                                                )
                                            )
                                        ),
-                                       hr(),
-                                       wellPanel(
-                                           ##### count file input module #####
-                                           conditionalPanel(
-                                               "input.file_format == 'dir'",
-                                               wellPanel(
-                                                   fluidRow(
-                                                       column(5, shinyFiles::shinyDirButton('data_folder', 'Select Data Folder', 'Please select a folder', FALSE, class = "btn-info")),
-                                                       column(2, 
-                                                              a(id = "directory_help_btn", icon("question-circle")),
-                                                              shinyBS::bsModal(id = "directory_help", title = "Input tips", trigger = "directory_help_btn", size = "large", list(
-                                                                  tags$li("Accepts folder containing HTSeq/featureCounts/VERSE output."),
-                                                                  tags$li("Counts files must contain the same feature set (Same number of rows, same rownames, multiple species not allowed)."),
-                                                                  tags$li("You can use file filter to select files containing certain keywords"),
-                                                                  tags$li("Example count file:"),
-                                                                  br(),
-                                                                  img(src = "exp_count_file.png", width = 150)
-                                                              ))      
-                                                       ),
-                                                       column(5, verbatimTextOutput("data_folder_show"))
-                                                   ),
-                                                   shinyBS::tipify(
-                                                       textInput("file_search", label = "File filter", value = ""), 
-                                                       title = "use keywords (e.g. exon.cnt) to include desired count files only", placement = "bottom", options = list(container = "body")
-                                                   ),
-                                                   uiOutput("select_data")
-                                               )
-                                           ),
-                                           
-                                           ##### Single file module #####
-                                           conditionalPanel(
-                                               "input.file_format == 'single'",
-                                               wellPanel(
-                                                   fluidRow(
-                                                       column(8, fileInput('file_single', 'Choose counts file', accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
-                                                       column(4, 
-                                                              a(id = "input_help_btn", icon("question-circle")),
-                                                              shinyBS::bsModal(id = "input_help", title = "Input tips", trigger = "input_help_btn", size = "large", list(
-                                                                  tags$li("PIVOT only accepts .csv or .txt input."),
-                                                                  tags$li("Feature names or sample names may be slightly modified to be valid R row/column names.")),
-                                                                  tags$li("Rows must be features and columns must be samples."),
-                                                                  tags$li("Negative values are not allowed."),
-                                                                  tags$li("Example:"),
-                                                                  img(src = "input_exp.png", width = 500)
-                                                              )
-                                                       )
-                                                   ),
-                                                   checkboxInput('header_ct', 'Header', TRUE),
-                                                   radioButtons('sep_ct', 'Separator', c(Comma=',', Semicolon=';', Tab='\t', Space = ' '), selected = ',', inline = TRUE),
-                                                   fluidRow(
-                                                       column(6, selectInput('row_ct', 'Row names', choices = list("automatic" = "automatic", "first column" = "firstcol", "numbers" = "numbers"), selected = "firstcol"))
-                                                   ),
-                                                   radioButtons('quote_ct', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), selected = '"', inline = TRUE)
-                                               )
-                                           ),
-                                           
-                                           # Threshold
-                                           conditionalPanel(condition = "input.file_format == 'dir' || input.file_format == 'single'",
-                                                            wellPanel(
-                                                                fluidRow(
-                                                                    column(6, radioButtons("input_threshold_type", "Choose pre-filtering type:", choices = c("Row Mean" = "mean", "Row Sum" = "sum"), inline = T)),
-                                                                    column(6,uiOutput("input_threshold_ui"))
-                                                                )
-                                                            ),
-                                                            
-                                                            # ERCC isolation
-                                                            wellPanel(
-                                                                fluidRow(
-                                                                    column(12, shinyBS::tipify(checkboxInput("ercc_isolation", label = "Only analyze ERCC in ERCC module.", value = T), title = "ERCC will not appear in modules like heatmap, PCA, etc. This exclusion of ERCC happens after DESeq normalization.", placement = "bottom", options = list(container = "body")))
-                                                                )
-                                                            )
-                                           ),
-                                           
-                                           # upload state
-                                           conditionalPanel(condition = "input.file_format == 'state'",
-                                                            fileInput('uploadState', 'Load PIVOT state:',  accept = ".rda"),
-                                                            uiOutput("refreshOnUpload"),
-                                                            tags$li("Only valid PIVOT .rda file can be accepted."),
-                                                            tags$li("You can save state using the system panel at top right."),
-                                                            tags$li("Session will immediately switch to the loaded state.")
-                                           ),
-                                           
-                                           # upload non-counts table
-                                           conditionalPanel(condition = "input.file_format == 'customtable'",
-                                                            fileInput('upload_customtable', 'Load Table:',  accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-                                                            tags$li("PIVOT supports data otherthan sequencing counts."),
-                                                            tags$li("You can upload e.g. PCA/t-sne projection tables for secondary analysis."),
-                                                            tags$li("Negative, non-interger values are allowed."),
-                                                            br(),
-                                                            wellPanel(
-                                                                checkboxInput('header_cs', 'Header', TRUE),
-                                                                radioButtons('sep_cs', 'Separator', c(Comma=',', Semicolon=';', Tab='\t', Space = ' '), selected = ',', inline = TRUE),
-                                                                fluidRow(
-                                                                    column(6, selectInput('row_cs', 'Row names', choices = list("automatic" = "automatic", "first column" = "firstcol", "numbers" = "numbers"), selected = "firstcol"))
-                                                                ),
-                                                                radioButtons('quote_cs', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), selected = '"', inline = TRUE)
-                                                            )
-                                           )
-                                           
+                                       
+                                       # Threshold
+                                       conditionalPanel(condition = "input.file_format == 'dir' || input.file_format == 'single'",
+                                                        tags$div(tags$b("Additional Input Settings:"), class = "param_setting_title"),
+                                                        fluidRow(
+                                                            column(6, radioButtons("input_threshold_type", "Choose pre-filtering type:", choices = c("Row Mean" = "mean", "Row Sum" = "sum"), inline = T)),
+                                                            column(6,uiOutput("input_threshold_ui"))
+                                                        ),
+                                                        
+                                                        # ERCC isolation
+                                                        fluidRow(
+                                                            column(12, shinyBS::tipify(checkboxInput("ercc_isolation", label = "Only analyze ERCC in ERCC module.", value = T), title = "ERCC will not appear in modules like heatmap, PCA, etc. This exclusion of ERCC happens after DESeq normalization.", placement = "bottom", options = list(container = "body")))
+                                                        )
+                                       ),
+                                       
+                                       # upload state
+                                       conditionalPanel(condition = "input.file_format == 'state'",
+                                                        tags$div(tags$b("PIVOT State Upload:"), class = "param_setting_title"),
+                                                        fileInput('uploadState', 'Load PIVOT state:',  accept = ".rda"),
+                                                        uiOutput("refreshOnUpload"),
+                                                        tags$li("Only valid PIVOT .rda file can be accepted."),
+                                                        tags$li("You can save state using the system panel at top right."),
+                                                        tags$li("Session will immediately switch to the loaded state.")
                                        ),
                                        
                                        # Submit button 
@@ -167,104 +148,41 @@ body <- dashboardBody(
                                    
                                    ####################### Group info module #####################
                                    tabPanel(
-                                       tags$b("Design Info"),
+                                       tags$b("DESIGN"),
                                        value = "group_in",
-                                       conditionalPanel(condition = "output.data_submitted_img",
-                                            wellPanel(
-                                                fluidRow(
-                                                    column(8, selectInput("add_group_way", label = NULL, choices = list("Manually add design info" = 1, "Upload a design info file" = 2), selected = 1)),
-                                                    column(4, 
-                                                           a(id = "design_help_btn", icon("question-circle")),
-                                                           
-                                                           shinyBS::bsModal(id = "design_help", title = "About design info", trigger = "design_help_btn", size = "large", list(
-                                                               tags$li("Specify group information (conditions used for differential expression analysis), or batch information (different experiments)."),
-                                                               tags$li("Adding this information will not affect DESeq and other normalization results, or any analysis that does not involve statistical testing between conditions."),
-                                                               tags$li("This information is required for differential expression analysis, classification and coloring plots by group/batch."))
-                                                           )
-                                                    )
-                                                ),
-                                                
-                                                uiOutput("design_detail_ui")
-                                            )
+                                       conditionalPanel(
+                                           condition = "output.data_submitted_img",
+                                           fluidRow(
+                                               column(12, tags$div(tags$b("Input method:"), class = "param_setting_title"))
+                                               #column(2, 
+                                                #      a(id = "design_help_btn", icon("question-circle")),
+                                                 #     shinyBS::bsModal(id = "design_help", title = "About design info", trigger = "design_help_btn", size = "large", list(
+                                                  #        tags$li("Specify group information (conditions used for differential expression analysis), or batch information (different experiments), or other sample metadata."),
+                                                   #       tags$li("Adding this information will not affect normalization results, or any analysis that does not depend on group information."),
+                                                    #      tags$li("You can upload entire sample metadata sheet and choose the specific column to be used as group in each analysis module."))
+                                                     # ))
+                                           ),
+                                           fluidRow(
+                                               column(8, selectInput("add_group_way", label = NULL, choices = list("Manually add design info" = 1, "Upload a design info file" = 2), selected = 1))
+                                           )
                                        ),
                                        conditionalPanel(condition = "!output.data_submitted_img",
                                             tags$p("Please submit your data first.")
                                        ),
-                                       hr(),
-                                       ##### Manual adding group module #####
-                                       conditionalPanel(
-                                           condition = "output.data_submitted_img&& input.add_group_way == 1",
-                                           fluidRow(
-                                               column(5,
-                                                      uiOutput("manual_add_group_ui"),
-                                                      uiOutput("manual_add_batch_ui")
-                                               ),
-                                               column(7, 
-                                                      DT::dataTableOutput("group_table_show"),
-                                                      fluidRow(
-                                                          column(6,
-                                                                 downloadButton('downloadGroup', 'Download', class = "btn btn-success")
-                                                          ),
-                                                          column(6,
-                                                                 actionButton('clear_group_1', label = "Clear design", icon = icon("times"), class = "btn btn-danger")
-                                                          )
-                                                      ),
-                                                      hr(),
-                                                      fluidRow(
-                                                          column(6, actionButton('submit_design_manual', label = "Submit Design", class = "btn btn-primary")),
-                                                          column(6, uiOutput("grp_submitted_img1"))
-                                                      )
-                                                )        
-                                           )
-                                       ),
-                                       
-                                       ##### Upload group info module #####
-                                       conditionalPanel(
-                                           condition = "input.add_group_way == 2",
-                                           fluidRow(
-                                               column(5,
-                                                      wellPanel(
-                                                          fluidRow(
-                                                              column(8, fileInput('file_group', label = NULL, accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
-                                                              column(4, 
-                                                                     a(id = "design_upload_help_btn", icon("question-circle")),
-                                                                     shinyBS::bsModal(id = "design_upload_help", title = "File format", trigger = "design_upload_help_btn", size = "large", list(
-                                                                         tags$p("The file must contain one 'Sample' column, one 'Group' and/or 'Batch' column. Example:"),
-                                                                         img(src = "design_tbl_exp.png", width = 300)
-                                                                     ))
-                                                              )
-                                                              
-                                                          ),
-                                                          checkboxInput('group_header', 'Header', TRUE),
-                                                          radioButtons('group_sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'), selected = ','),
-                                                          radioButtons('group_quote', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), selected = '"')
-                                                      )
-                                               ),
-                                               column(7,
-                                                      DT::dataTableOutput("group_table_show2"),
-                                                      br(),
-                                                      actionButton('clear_group_2', label = "Clear design", icon = icon("times"), class = "btn btn-danger"),
-                                                      hr(),
-                                                      checkboxInput("sample_reorder", "Reorder samples according to the design table.", value = F),
-                                                      fluidRow(
-                                                          column(6, actionButton('submit_design_upload', label = "submit design", class = "btn btn-primary")),
-                                                          column(6, uiOutput("grp_submitted_img2"))
-                                                      )
-                                               )
-                                           )
-                                       )
+                                       tags$p(),
+                                       uiOutput("design_ui")
                                    ),
                                    
                                    #################### feature filtering module ###################
                                    tabPanel(
-                                       tags$b("Feature Filter"),
+                                       tags$b("FEATURE"),
                                        value = "feature_in",
                                        uiOutput("filter_ui")
                                    ),
                                    
                                    #################### Data subsetting module ###################
                                    tabPanel(
-                                       tags$b("Data Subsetter"),
+                                       tags$b("SAMPLE"),
                                        value = "sample_in",
                                        uiOutput("subset_ui")
                                    )

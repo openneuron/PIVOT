@@ -192,7 +192,6 @@ enhanced_box <- function (..., title = NULL, id = NULL, footer = NULL, status = 
         boxClass <- paste(boxClass, "box-solid")
     }
     if (!is.null(status)) {
-        validateStatus(status)
         boxClass <- paste0(boxClass, " box-", status)
     }
     if (collapsible && collapsed) {
@@ -269,7 +268,7 @@ enhanced_box <- function (..., title = NULL, id = NULL, footer = NULL, status = 
 
 modalDialog = function(id, header = "Confirmation", body = "Are you sure?", footer = list(actionButton("confirmDlgOkBtn", "OK"))){
     div(id = id, class = "modal fade",
-        div(class = "modal-dialog",
+        div(class = "modal-dialog modal-sm",
             div(class = "modal-content",
                 div(class = "modal-header",
                     tags$button(type = "button", class = "close", 'data-dismiss' = "modal", 'aria-hidden' = "true", HTML('&times;')),
@@ -286,11 +285,11 @@ modalDialog = function(id, header = "Confirmation", body = "Are you sure?", foot
     )
 }
 
-modalTriggerButton = function(inputId, target, label, icon = NULL){
+modalTriggerButton = function(inputId, target, label, icon = NULL, class = "btn action-button btn-danger btn_leftAlign"){
     if (!is.null(icon)) 
         buttonContent <- list(icon, label)
     else buttonContent <- label
-    tags$button(id = inputId, type = "button", class = "btn action-button btn-danger btn_leftAlign", 'data-toggle' = "modal", 'data-target' = target,
+    tags$button(id = inputId, type = "button", class = class, 'data-toggle' = "modal", 'data-target' = target,
                 buttonContent)
 }
 

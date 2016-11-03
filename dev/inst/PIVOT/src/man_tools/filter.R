@@ -21,38 +21,36 @@ output$filter_renormalize_ui <- renderUI({
 
 output$filter_ui <- renderUI({
     if(is.null(r_data$glb.raw)) return(
-        tags$p("Looks there's nothing to filter.")
+        tags$p("Please upload data first.")
     )
     list(
-        wellPanel(
-            tags$b("Filter:"),
-            a(id = "filter_type_help_btn", icon("question-circle")),
-            shinyBS::bsModal(id = "filter_type_help", title = "Filter help", trigger = "filter_type_help_btn", size = "large", list(
-                tags$li("You can select or delete features from the input set to create subset for analysis."),
-                tags$li("You can use two types of filters, range filter and marker filter."),
-                tags$li("Range filter allow you to choose features within a certain range of average/total expression."),
-                tags$li("You can also provide a marker feature list to only analyze the ones you are interested in.")
-            )),
-            fluidRow(
-                column(6, 
-                       selectInput("feature_filter_type", label = "Filter based on", choices = list("Feature expression" = "range", "Marker feature" = "marker"))
-                ),
-                column(6, 
-                       selectInput("is_neg_filter", label = "Select/Delete Feature", choices = list("Positive filter (select)" = FALSE, "Negative filter (delete)" = TRUE), selected = FALSE)
-                )
+        tags$div(tags$b("Feature Filter Type:"), class = "param_setting_title"),
+        #a(id = "filter_type_help_btn", icon("question-circle")),
+        #shinyBS::bsModal(id = "filter_type_help", title = "Filter help", trigger = "filter_type_help_btn", size = "large", list(
+        #    tags$li("You can select or delete features from the input set to create subset for analysis."),
+        #    tags$li("You can use two types of filters, range filter and marker filter."),
+        #    tags$li("Range filter allow you to choose features within a certain range of average/total expression."),
+        #    tags$li("You can also provide a marker feature list to only analyze the ones you are interested in.")
+        #)),
+        fluidRow(
+            column(6, 
+                   selectInput("feature_filter_type", label = "Filter based on", choices = list("Expression" = "range", "Gene List" = "marker"))
             ),
-            fluidRow(
-                column(6, 
-                       shinyBS::tipify(
-                            checkboxInput("keep_filter", tags$b("Keep filtering the current dataset"), value = FALSE),
-                            title = "If unchecked filtration will only be performed on the input dataset, otherwise filtration will be performed on the current dataset (retaining any previous filtering or subsetting effects).", 
-                            placement = "bottom", options = list(container = "body")
-                       )
-                ),
-                column(6, uiOutput("filter_renormalize_ui"))
+            column(6, 
+                   selectInput("is_neg_filter", label = "Keep/Delete Feature", choices = list("Keep Selected" = FALSE, "Delete Selected" = TRUE), selected = FALSE)
             )
-
         ),
+        fluidRow(
+            column(6, 
+                   shinyBS::tipify(
+                       checkboxInput("keep_filter", tags$b("Keep filtering the current dataset"), value = FALSE),
+                       title = "If unchecked filtration will only be performed on the input dataset, otherwise filtration will be performed on the current dataset (retaining any previous filtering or subsetting effects).", 
+                       placement = "bottom", options = list(container = "body")
+                   )
+            ),
+            column(6, uiOutput("filter_renormalize_ui"))
+        ),
+        
         hr(),
         uiOutput("filters"),
 
@@ -68,6 +66,7 @@ output$filters <- renderUI({
     if(is.null(r_data$glb.raw)) return()
     if(input$feature_filter_type == "range") {
         list(
+            tags$div(tags$b("Expression Filter:"), class = "param_setting_title"),
             wellPanel(
                 fluidRow(
                     column(4,
@@ -76,9 +75,7 @@ output$filters <- renderUI({
                     column(6,
                            uiOutput("filter_type2_ui")
                     )
-                )
-            ),
-            wellPanel(
+                ),
                 fluidRow(
                     column(8,
                            uiOutput("feature_cnt_filter")  
@@ -100,34 +97,33 @@ output$filters <- renderUI({
             hr(),
             wellPanel(
                 fluidRow(
-                    column(6, uiOutput("min_express_cells_ui")),
-                    column(6, uiOutput("min_express_cells_percent"))
+                    column(8, uiOutput("min_express_cells_ui")),
+                    column(4, uiOutput("min_express_cells_percent"))
                 ),
                 uiOutput("express_filter_btn_ui")
             )
         )
     } else if(input$feature_filter_type == "marker") {
         list(
+            tags$div(tags$b("Marker Filter:"), class = "param_setting_title"),
             fluidRow(
                 column(6, 
                        wellPanel(
-                           tags$b("Marker feature filter"),
-                           wellPanel(
-                               fluidRow(
-                                   column(8, fileInput('mk_feature_file', label = NULL, accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
-                                   column(4, 
-                                          a(id = "mk_feature_help_btn", icon("question-circle")),
-                                          shinyBS::bsModal(id = "mk_feature_upload_help", title = "File format", trigger = "mk_feature_help_btn", size = "small", list(
-                                              tags$p("The first column of the uploaded file will be used as markers (case insensitive). Example:"),
-                                              img(src = "marker_tbl_exp.png", width = 200)
-                                          ))
-                                   )
-                               ),
-                               checkboxInput('mk_header', 'Header', value = F),
-                               radioButtons('mk_sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'), selected = '\t'),
-                               radioButtons('mk_quote', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), selected = '"'),
-                               uiOutput("mk_submit_ui")
-                           )
+                           tags$b("Upload Gene List:"),
+                           fluidRow(
+                               column(8, fileInput('mk_feature_file', label = NULL, accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
+                               column(4, 
+                                      a(id = "mk_feature_help_btn", icon("question-circle")),
+                                      shinyBS::bsModal(id = "mk_feature_upload_help", title = "File format", trigger = "mk_feature_help_btn", size = "small", list(
+                                          tags$p("The first column of the uploaded file will be used as markers (case insensitive). Example:"),
+                                          img(src = "marker_tbl_exp.png", width = 200)
+                                      ))
+                               )
+                           ),
+                           checkboxInput('mk_header', 'Header', value = F),
+                           radioButtons('mk_sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'), selected = '\t'),
+                           radioButtons('mk_quote', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), selected = '"'),
+                           uiOutput("mk_submit_ui")
                        )
                 ),
                 column(6,
@@ -144,7 +140,7 @@ output$filters <- renderUI({
 output$min_express_cells_ui <- renderUI({
     if(is.null(filter_data())) return()
     express_min <- min(rowSums(filter_data()$raw > 0))
-    numericInput("min_express_cells", "Minimum number of cells expressed", min = 1, max = length(r_data$sample_name), value = express_min)
+    numericInput("min_express_cells", "Filter based on minimum number of cells expressed", min = 1, max = length(r_data$sample_name), value = express_min)
 })
 
 output$min_express_cells_percent <- renderUI({

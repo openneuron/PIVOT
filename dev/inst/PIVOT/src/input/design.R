@@ -13,6 +13,66 @@
 # under the License.
 
 
+output$design_ui <- renderUI({
+    if(is.null(r_data$glb.raw)) return()
+    if(input$add_group_way == 1) { # manual add design 
+        list(
+            fluidRow(
+                column(5,
+                       tags$div(tags$b("Add Category:"), class = "param_setting_title"),
+                       textInput("man_cate_name", "Category(column) name:", placeholder = "e.g., Group/Batch/Condition"),
+                       actionButton('man_add_cate', label = "Add Category", class = "btn btn-info"),
+                       tags$p(),
+                       uiOutput("man_choose_cate_ui"),
+                       tags$p(),
+                       uiOutput("man_cate_add_group_ui")
+                ),
+                column(7, 
+                       tags$div(tags$b("Design Table Preview"), class = "param_setting_title"),
+                       DT::dataTableOutput("group_tbl_man_show"),
+                       tags$p(),
+                       uiOutput("grp_submitted_img1"),
+                       uiOutput("man_design_submit_ui")
+                )        
+            )
+        )
+    } else { # upload design table
+        list(
+            fluidRow(
+                column(5,
+                       tags$div(tags$b("Design Table Upload:"), class = "param_setting_title"),
+                       fluidRow(
+                           column(8, fileInput('file_group', label = NULL, accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
+                           column(4, 
+                                  a(id = "design_upload_help_btn", icon("question-circle")),
+                                  shinyBS::bsModal(id = "design_upload_help", title = "File format", trigger = "design_upload_help_btn", size = "large", list(
+                                      tags$p("The file must contain one 'Sample' column, one 'Group' and/or 'Batch' column. Example:"),
+                                      img(src = "design_tbl_exp.png", width = 300)
+                                  ))
+                           )
+                           
+                       ),
+                       wellPanel(
+                           checkboxInput('group_header', 'Header', TRUE),
+                           radioButtons('group_sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'), selected = ','),
+                           radioButtons('group_quote', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), selected = '"')
+                       )
+                ),
+                column(7,
+                       tags$div(tags$b("Design Table Preview"), class = "param_setting_title"),
+                       DT::dataTableOutput("group_tbl_up_show"),
+                       br(),
+                       checkboxInput("sample_reorder", "Reorder samples according to the design table.", value = F),
+                       uiOutput("grp_submitted_img2"),
+                       actionButton('submit_design_upload', label = "submit design", class = "btn-primary btn_rightAlign")
+                )
+            )
+        )
+    }
+})
+
+design_value <- reactiveValues()
+
 custom_merge <- function(df, df1, by, col) {
     sp <- df[,by]
     gp <- df[,col]
@@ -22,45 +82,58 @@ custom_merge <- function(df, df1, by, col) {
     return(df)
 }
 
-
-output$design_detail_ui <- renderUI({
-    if(input$add_group_way == 2) return()
+output$man_choose_cate_ui <- renderUI({
+    if(length(design_value$cates) < 1) return()
+    categories = design_value$cates
+    names(categories) = categories
     list(
-        wellPanel(
-            checkboxGroupInput("design_info_compo", label = "Design info type", choices = list("Add group info" = "group", "Add batch info" = "batch"), selected = "group", inline = T)
-        )
+        tags$div(tags$b("Edit Category:"), class = "param_setting_title"),
+        selectInput("man_choose_cate", "Choose category", choices = as.list(categories)),
+        actionButton('man_del_cate', label = "Delete Category", class = "btn-danger")
     )
 })
 
-
 output$manual_add_group_ui <- renderUI({
-    if(input$add_group_way != 1 || !("group" %in% (input$design_info_compo))) return()
+    if(input$add_group_way != 1) return()
     sample_name <- colnames(r_data$glb.raw)
     isolate({
         group_options <- as.list(sample_name)
         names(group_options) <- sample_name
         list(
-            wellPanel(
-                textInput("group_name", "Group name:", "group_1"),
-                selectizeInput('group_list_input', label = "Add samples to this group", choices = group_options, multiple = TRUE),
-                verbatimTextOutput("group_show"),
-                actionButton('add_group', label = "Add Group", class = "btn btn-info")
-            )
+            textInput("man_group_name", label = "Group name:", value = "group_1"),
+            selectizeInput('man_sample_in_group', label = "Add samples to this group", choices = group_options, multiple = TRUE),
+            verbatimTextOutput("man_group_show"),
+            actionButton('man_add_group', label = "Add Group", class = "btn-info")
         )
     })
 })
 
-
-output$manual_add_batch_ui <- renderUI({
-    if(input$add_group_way != 1 || !("batch" %in% (input$design_info_compo))) return()
+output$man_cate_add_group_ui <- renderUI({
+    if(is.null(input$man_choose_cate)) return()
+    if(!input$man_choose_cate %in% colnames(design_value$df)) return()
     list(
-        wellPanel(
-            textInput("batch_name", "Batch name:", "Exp.1"),
-            selectizeInput('batch_list_input', label = "Add samples to this batch", choices = NULL, multiple = TRUE),
-            verbatimTextOutput("batch_show"),
-            actionButton('add_batch', label = "Add Batch", class = "btn btn-info")
+        tags$div(tags$b(paste("Add Groups to Category"),input$man_choose_cate), class = "param_setting_title"),
+        uiOutput("manual_add_group_ui")
+    )
+})
+
+output$man_design_submit_ui <- renderUI({
+    not_filled <- sum(is.na(design_value$df))
+    if(!not_filled) {
+        actionButton("man_submit_design", "Submit Design", class = "btn-primary btn_rightAlign")
+    } else {
+        list(
+            modalTriggerButton("man_submit_trigger", "#submitConfirmDlg", paste("Submit Design"), class = "btn action-button btn-primary btn_rightAlign"),
+            modalDialog(id="submitConfirmDlg", 
+                        header = "Alert: Empty cells detected",
+                        body = "System detects some cells are still empty, these cells will be replaced with NA values (as 'NA' group).",
+                        footer=list(
+                            modalTriggerButton("submitConfirmDlgBtn", "#submitConfirmDlg", "Proceed", class = "btn action-button btn-primary"),
+                            tags$button(type = "button", class = "btn btn-danger", 'data-dismiss' = "modal", "Cancel")
+                        )
+            )
         )
-    )    
+    }
 })
 
 ################################## Group input handler #########################################
@@ -69,21 +142,13 @@ clear_design <- function() {
         session$sendCustomMessage(type = "resetFileInputHandler", "file_group")
         design_upload$df <- data.frame()
     }
-    if(!is.null(r_data$glb.raw))
+    if(!is.null(r_data$glb.raw)) {
         design_value$df <- data.frame(Sample = colnames(r_data$glb.raw))
-    else
-        design_value$df <- data.frame(Sample = NA)
-
-    if("group" %in% (input$design_info_compo)) { # add Group column if necessary
-        design_value$df$Group <- NA
-    } else if("Group" %in% colnames(design_value$df)){# Delete Group column 
-        design_value$df <- subset(design_value$df, select = - Group)
+        design_value$cates <- NULL
+    } else {
+        design_value <- NULL
     }
-    if("batch" %in% (input$design_info_compo)) {
-        design_value$df$Batch <- NA
-    } else if("Batch" %in% colnames(design_value$df)){
-        design_value$df <- subset(design_value$df, select = - Batch)
-    }
+    
     plot_specs$info <- NULL
     
     r_data$glb.meta <- data.frame(sample = colnames(r_data$glb.raw))
@@ -178,90 +243,74 @@ clear_results <-function() {
 
 ###### Handle manual group input #####
 observe({
-    if(is.null(r_data$glb.raw) || is.null(design_value$df$Group)) return ()
+    # Init df
+    if(is.null(r_data$glb.raw)) return()
+    if(is.null(design_value$df)) {
+        design_value$df <- data.frame(Sample = colnames(r_data$glb.raw))
+        design_value$df$Group <- rep(NA, nrow(design_value$df))
+        design_value$cates <- colnames(design_value$df)[-1]
+    }
+})
+
+observe({
+    if(is.null(r_data$glb.raw) || is.null(input$man_choose_cate) || is.null(design_value$df)) return ()
+    if(!input$man_choose_cate %in% colnames(design_value$df)) return()
     isolate({
-        left_sample <- design_value$df$Sample[which(is.na(design_value$df$Group))]
+        #assign("design_value", design_value$df, env = .GlobalEnv)
+        left_sample <- design_value$df$Sample[which(is.na(design_value$df[,input$man_choose_cate]))]
         group_options <- as.list(left_sample)
         names(group_options) <- left_sample
-        updateSelectInput(session, "group_list_input",
+        updateSelectInput(session, "man_sample_in_group",
                           label = "Add samples to this group:",
                           choices = group_options, selected = NULL)
     })
 })
 
-###### Handle manual batch input #####
-observe({
-    if(is.null(r_data$glb.raw) || is.null(design_value$df$Batch)) return ()
-    isolate({
-        left_sample <- design_value$df$Sample[which(is.na(design_value$df$Batch))]
-        batch_options <- as.list(left_sample)
-        names(batch_options) <- left_sample
-        updateSelectInput(session, "batch_list_input",
-                          label = "Add samples to this batch:",
-                          choices = batch_options, selected = NULL)
-    })
-})
-
-
 current_group <- reactive({
-    if(is.null(input$group_list_input)) return()
-    data.frame(Sample = input$group_list_input, Group = input$group_name)
+    if(is.null(input$man_sample_in_group)) return()
+    cur_cate <- input$man_choose_cate
+    df<-data.frame(Sample = input$man_sample_in_group)
+    df[,cur_cate] <- rep(input$man_group_name, nrow(df))
+    return(df)
 })
 
-output$group_show <- renderPrint({
+output$man_group_show <- renderPrint({
     current_group()
 })
 
-current_batch <- reactive({
-    if(is.null(input$batch_list_input)) return()
-    data.frame(Sample = input$batch_list_input, Batch = input$batch_name)
-})
-
-output$batch_show <- renderPrint({
-    current_batch()
-})
-
-design_value <- reactiveValues()
-
-
-observe({ # if add batch or group, add corresponsing columns if necessary
-    input$design_info_compo
-    isolate({
-        if("group" %in% (input$design_info_compo)) { # add Group column if necessary
-            if(!("Group" %in% colnames(design_value$df))) # Group column not initiated
-                design_value$df$Group <- NA
-        } else if("Group" %in% colnames(design_value$df)){# Delete Group column 
-            design_value$df <- subset(design_value$df, select = - Group)
-        }
-        if("batch" %in% (input$design_info_compo)) {
-            if(!("Batch" %in% colnames(design_value$df)))
-                design_value$df$Batch <- NA
-        } else if("Batch" %in% colnames(design_value$df)){
-            design_value$df <- subset(design_value$df, select = - Batch)
-        }
-    })
-})
-
-observeEvent(input$add_group, {
-    if(is.null(input$group_list_input)){
-        session$sendCustomMessage(type = "showalert", "Give me something!")
+observeEvent(input$man_add_cate, {
+    if(is.null(input$man_cate_name) || input$man_cate_name == ""){
+        session$sendCustomMessage(type = "showalert", "Please specify a category name.")
         return()
     }
-   
-    design_value$df <- custom_merge(design_value$df, current_group(), by = "Sample", col = "Group")
-})
-
-observeEvent(input$add_batch, {
-    if(is.null(input$batch_list_input)){
-        session$sendCustomMessage(type = "showalert", "Give me something!")
+    if(input$man_cate_name %in% colnames(design_value$df)) {
+        session$sendCustomMessage(type = "showalert", "Category already present in the table.")
         return()
     }
-   
-    design_value$df <- custom_merge(design_value$df, current_batch(), by = "Sample", col = "Batch")
+    if(input$man_cate_name %in% c("None", "none")) {
+        session$sendCustomMessage(type = "showalert", "'None' or 'none' cannot be used as category name.")
+        return()
+    }
+    design_value$df[,input$man_cate_name] <- rep(NA, nrow(design_value$df))
+    design_value$cates <- colnames(design_value$df)[-1]
 })
 
-output$group_table_show <- DT::renderDataTable({
-    DT::datatable(design_value$df, options = list(scrollX = TRUE, scrollY = "350px", paging = FALSE, searching = FALSE)) 
+observeEvent(input$man_del_cate, {
+    if(is.null(input$man_choose_cate)) return()
+    design_value$df[,input$man_choose_cate] <- NULL
+    design_value$cates <- colnames(design_value$df)[-1]
+})
+
+observeEvent(input$man_add_group, {
+    if(is.null(input$man_sample_in_group)){
+        session$sendCustomMessage(type = "showalert", "Please add samples to this group.")
+        return()
+    }
+    design_value$df <- custom_merge(design_value$df, current_group(), by = "Sample", col = input$man_choose_cate)
+})
+
+output$group_tbl_man_show <- DT::renderDataTable({
+    DT::datatable(design_value$df, options = list(scrollX = TRUE, scrollY = "400px", paging = FALSE, searching = FALSE)) 
 })
 
 observeEvent(input$clear_group_1, {
@@ -274,36 +323,16 @@ observeEvent(input$clear_group_1, {
     })
 })
 
-output$downloadGroup <- downloadHandler(
-    filename = function() { paste0("group_info", '.csv') },
-    content = function(file) {
-        write.csv(design_value$df, file, row.names = FALSE)
-    }
-)
 # submit group (manual module)
-observeEvent(input$submit_design_manual, {
-    if(dim(design_value$df)[1] == 0) {
-        session$sendCustomMessage(type = "showalert", "Give me something!")
+observeEvent(input$man_submit_design, {
+    if(ncol(design_value$df) < 2) {
+        session$sendCustomMessage(type = "showalert", "Please add at least one category.")
         return()
     }
-    not_filled <- sum(is.na(design_value$df))
-    if(not_filled) {
-        session$sendCustomMessage(type = "showalert", paste(not_filled, "cells are empty, please check again."))
-        return()
-    }
+
     withProgress(message = 'Processing', value = 0, {
         incProgress(0.3, detail = "Adding design info...")
         df_tmp <- design_value$df
-        # Add group info to global
-        
-        matched_sp <- match(colnames(r_data$glb.raw), df_tmp$Sample)
-        
-        if(any(is.na(matched_sp))) # The user will have to re-specify the group information if the number of sample has changed. 
-        {
-            session$sendCustomMessage(type = "showalert", "Please provide a meta table for all your input samples. Some sample names are not found.")
-            return()
-        }
-        
         # Other sanity checks? Like cols contain NA, empty cols(only spaces), cols contain only one category?
         r_data$glb.meta <- df_tmp
         
@@ -313,7 +342,23 @@ observeEvent(input$submit_design_manual, {
     })
 })
 
-
+observeEvent(input$submitConfirmDlgBtn, {
+    if(ncol(design_value$df) < 2) {
+        session$sendCustomMessage(type = "showalert", "Please add at least one category.")
+        return()
+    }
+    
+    withProgress(message = 'Processing', value = 0, {
+        incProgress(0.3, detail = "Adding design info...")
+        df_tmp <- design_value$df
+        # Other sanity checks? Like cols contain NA, empty cols(only spaces), cols contain only one category?
+        r_data$glb.meta <- df_tmp
+        
+        incProgress(0.3, detail = "Updating metadata...")
+        r_data <- init_meta(r_data, type = "sample")
+        setProgress(1)
+    })
+})
 
 
 ##### Handle group info input file #####
@@ -333,7 +378,7 @@ observe({
     })
 })
 
-output$group_table_show2 <- DT::renderDataTable({
+output$group_tbl_up_show <- DT::renderDataTable({
     DT::datatable(design_upload$df, options = list(scrollX = TRUE, scrollY = "350px", paging = FALSE, searching = FALSE))
 })
 
@@ -366,6 +411,11 @@ observeEvent(input$submit_design_upload, {
         return()
     }
     
+    if(any(colnames(df_tmp) %in% c("None", "none"))) {
+        session$sendCustomMessage(type = "showalert", "'None' or 'none' cannot be used as category name.")
+        return()
+    }
+    
     withProgress(message = 'Processing', value = 0, {
         incProgress(0.3, detail = "Adding design info...")
         if(input$sample_reorder) {
@@ -391,17 +441,30 @@ observeEvent(input$submit_design_upload, {
 # Group submitted indicator
 # The image indicating file is submitted
 output$grp_submitted_img1 <- renderUI({
-    if(is.null(r_data$group)) return()
-    img(src = "button_ok.png", width = 35, height = 35)
+    if(is.null(r_data$glb.meta) || ncol(r_data$glb.meta) == 1) return()
+    img(src = "button_ok.png", width = 35, height = 35, align = "right")
 })
 
 output$grp_submitted_img2 <- renderUI({
-    if(is.null(r_data$group)) return()
-    img(src = "button_ok.png", width = 35, height = 35)
+    if(is.null(r_data$glb.meta) || ncol(r_data$glb.meta) == 1) return()
+    img(src = "button_ok.png", width = 35, height = 35, align = "right")
 })
 
+output$input_design_tbl <- DT::renderDataTable({
+    if(is.null(r_data$glb.meta)) return()
+    DT::datatable(r_data$glb.meta, selection = 'single', 
+                  options = list(
+                      scrollX = T, scrollY = "500px", lengthMenu = c(20, 50, 100)
+                  )
+    )
+})
 
-
+output$download_design_tbl <- downloadHandler(
+    filename = "design_tbl.csv",
+    content = function(file) {
+        write.csv(r_data$glb.meta, file)
+    }
+)
 
 
 
@@ -453,25 +516,6 @@ get_color_vector <- function(labels, pal="Set1", maxCol=9)
     return(colv)
 }
 
-observe({ # Each time sample list changes, re-initiate the entire table
-    r_data$glb.raw
-    isolate({
-        if(is.null(r_data$glb.raw)) return()
-        
-        design_value$df <- data.frame(Sample = colnames(r_data$glb.raw))
-        
-        if("group" %in% (input$design_info_compo)) { # add Group column if necessary
-            design_value$df$Group <- NA
-        } else if("Group" %in% colnames(design_value$df)){# Delete Group column 
-            design_value$df <- subset(design_value$df, select = - Group)
-        }
-        if("batch" %in% (input$design_info_compo)) {
-            design_value$df$Batch <- NA
-        } else if("Batch" %in% colnames(design_value$df)){
-            design_value$df <- subset(design_value$df, select = - Batch)
-        }
-    })
-})
 
 output$sample_coloring_ui <- renderUI({
     if(is.null(r_data$group) && is.null(r_data$batch) && is.null(r_data$community)) return()

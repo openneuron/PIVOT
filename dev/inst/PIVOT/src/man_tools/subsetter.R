@@ -15,53 +15,51 @@
 
 output$subset_ui <- renderUI({
     
-    if(is.null(r_data$glb.raw)) return(tags$p("Looks like there's nothing to subset."))
+    if(is.null(r_data$glb.raw)) return(tags$p("Please upload data first."))
 
     list(
-        wellPanel(
-            tags$b("Subsetter:"),
-            a(id = "subset_type_help_btn", icon("question-circle")),
-            shinyBS::bsModal(id = "subset_type_help", title = "Subsetter help", trigger = "subset_type_help_btn", size = "large", list(
-                tags$li("You can select or delete samples from the input set to create subset for analysis."),
-                tags$li("An implicit filtering will happen to get features with >0 total expression."),
-                tags$li("Previous filtering will be undone.")
-            )),
-            
-            fluidRow(
-                column(6, 
-                       selectInput("subsetter_type", label = "Subsetter type", choices = list("Manually pick samples" = "manual", "Upload a sample list" = "list", "Subset based on sample stats" = "stats"), selected = "manual")
-                ),
-                column(6, 
-                       selectInput("is_neg_subsetter", label = "Select/Delete sample", choices = list("Positive subsetter (select)" = FALSE, "Negative subsetter (delete)" = TRUE), selected = FALSE)
-                )
+        tags$div(tags$b("Sample Subsetter Type:"), class = "param_setting_title"),
+        #a(id = "subset_type_help_btn", icon("question-circle")),
+        #shinyBS::bsModal(id = "subset_type_help", title = "Subsetter help", trigger = "subset_type_help_btn", size = "large", list(
+        #    tags$li("You can select or delete samples from the input set to create subset for analysis."),
+        #    tags$li("An implicit filtering will happen to get features with >0 total expression."),
+        #    tags$li("Previous filtering will be undone.")
+        #)),
+        
+        fluidRow(
+            column(6, 
+                   selectInput("subsetter_type", label = "Subsetter type", choices = list("Manually pick samples" = "manual", "Upload a sample list" = "list", "Subset based on sample stats" = "stats"), selected = "manual")
             ),
-            
-            uiOutput("subsetter_renormalize_ui")
+            column(6, 
+                   selectInput("is_neg_subsetter", label = "Select/Delete sample", choices = list("Positive subsetter (select)" = FALSE, "Negative subsetter (delete)" = TRUE), selected = FALSE)
+            )
         ),
         
+        uiOutput("subsetter_renormalize_ui"),
         
         hr(),
         
-        conditionalPanel(condition = "input.subsetter_type == 'manual'", 
-            wellPanel(
-                fluidRow(
-                    column(6,  
-                           textInput("sample_search", label = "Select sample", value = ""), 
-                           uiOutput("manual_select_ui"),
-                           uiOutput("manual_subset_btn_ui")
-                    ),
-                    column(6, 
-                           uiOutput("group_subset_ui")
-                    )
+        conditionalPanel(
+            condition = "input.subsetter_type == 'manual'", 
+            tags$div(tags$b("Select Sample:"), class = "param_setting_title"),
+            fluidRow(
+                column(6,  
+                       textInput("sample_search", label = "Select sample", value = ""), 
+                       uiOutput("manual_select_ui"),
+                       uiOutput("manual_subset_btn_ui")
+                ),
+                column(6, 
+                       uiOutput("group_subset_ui")
                 )
             )
         ),
         
-        conditionalPanel(condition = "input.subsetter_type == 'list'", 
-            wellPanel(
-                fluidRow(
-                    column(6, 
-                           tags$b("Sample list in file: "),
+        conditionalPanel(
+            condition = "input.subsetter_type == 'list'", 
+            tags$div(tags$b("Upload Sample List:"), class = "param_setting_title"),
+            fluidRow(
+                column(6, 
+                       wellPanel(
                            fluidRow(
                                column(8, fileInput('sb_sample_file', label = NULL, accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))),
                                column(4, 
@@ -74,36 +72,34 @@ output$subset_ui <- renderUI({
                            ),
                            checkboxInput('sb_header', 'Header', value = TRUE),
                            radioButtons('sb_sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'), selected = '\t'),
-                           radioButtons('sb_quote', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), selected = '"'),
-                           uiOutput("sb_submit_ui")
-                    ),
-                    column(6,
-                           tags$p("[sample name in 1st column]"),
-                           DT::dataTableOutput('sb_sample_tbl')
-                    )
+                           radioButtons('sb_quote', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), selected = '"')
+                       ),
+                       uiOutput("sb_submit_ui")
+                ),
+                column(6,
+                       tags$p("[sample name in 1st column]"),
+                       DT::dataTableOutput('sb_sample_tbl')
                 )
             )
         ),
-        conditionalPanel(condition = "input.subsetter_type == 'stats'", 
-            list(
-                wellPanel(
-                    fluidRow(
-                        column(6,
-                               uiOutput("sample_stats_plt_type_ui")
-                        ),
-                        column(6, 
-                               uiOutput("sample_stats_text_ui")
-                        )
-                    )
+        conditionalPanel(
+            condition = "input.subsetter_type == 'stats'", 
+            tags$div(tags$b("Choose Range on Graph:"), class = "param_setting_title"),
+            fluidRow(
+                column(6,
+                       uiOutput("sample_stats_plt_type_ui")
                 ),
-                uiOutput("sample_stats_ui")
-            )
+                column(6, 
+                       uiOutput("sample_stats_group_ui")
+                )
+            ),
+            uiOutput("sample_stats_instr_ui"),
+            uiOutput("sample_stats_ui")
         ),
-        
-        hr(),
         fluidRow(
-            column(9),
-            column(3, shinyBS::tipify(actionButton('undo_subset_sample', label = "Undo Subset", icon = icon("times"), class = "btn btn-danger"), title = "Data will return to the original input dataset. All filtration/subsetting will be undone.", placement = "bottom", options = list(container = "body")))
+            column(12,        shinyBS::tipify(actionButton('undo_subset_sample', label = "Undo Subset", icon = icon("times"), class = "btn-danger btn_rightAlign"), 
+                                              title = "Data will return to the original input dataset. All filtration/subsetting will be undone.", 
+                                              placement = "bottom", options = list(container = "body")))
         )
     )
 })
@@ -155,7 +151,16 @@ output$sample_stats_plt_type_ui <- renderUI({
     )
 })
 
-output$sample_stats_text_ui <- renderUI({
+output$sample_stats_group_ui <- renderUI({
+    if(is.null(r_data$glb.meta) || ncol(r_data$glb.meta) < 2) return()
+    categories = colnames(r_data$glb.meta)[-1]
+    names(categories) <- categories
+    options <- as.list(categories)
+    options$None = "None"
+    selectInput("sample_stats_group", label = "Color by", choices = options)
+})
+
+output$sample_stats_instr_ui <- renderUI({
     if(is.null(input$sample_stats_plt_type)) return()
     if(input$sample_stats_plt_type == "cooks") {
         tags$p("See DESeq2 vignettes for details. This module only provide visualization. You need to manually remove the sample with abnormal cook's distance.")
@@ -191,28 +196,32 @@ output$plt_subset_btn_ui <- renderUI({
         return()
     }
     if(!rnorm) {
-        actionButton('plt_subset_btn', label = "Select", class = "btn btn-info")
+        actionButton('plt_subset_btn', label = "Select", class = "btn-info btn_rightAlign")
     } else if(rnorm) {
-        actionButton('plt_subset_btn', label = "Select & Renorm", class = "btn btn-info")
+        actionButton('plt_subset_btn', label = "Select & Renorm", class = "btn-info btn_rightAlign")
     } 
 })
 
 output$sample_stats_plot <- renderPlotly({
     if(is.null(r_data$sample_meta) || is.null(input$sample_stats_plt_type) || input$sample_stats_plt_type == "cooks") return()
-
+    r_data$glb.meta
+    input$sample_stats_group
     isolate({
-        tbl <- r_data$sample_meta %>% tibble::rownames_to_column("sample") 
-        colnames(tbl)[which(colnames(tbl) == input$sample_stats_plt_type)] <- "y"
+        withProgress(message = 'Processing...', value = 0.5, {
+            tbl <- r_data$sample_meta %>% tibble::rownames_to_column("sample") 
+            colnames(tbl)[which(colnames(tbl) == input$sample_stats_plt_type)] <- "y"
+            if(!is.null(input$sample_stats_group) && input$sample_stats_group != "None") {
+                tbl$Group <- r_data$glb.meta[,input$sample_stats_group][match(tbl$sample,r_data$glb.meta$sample)]
+                plt1 <- tbl %>% plot_ly(x = sample, y = y, type = "bar", color = as.character(tbl$Group), source = "sample_range_select")
+            } else {
+                plt1 <- tbl %>% plot_ly(x = sample, y = y, type = "bar", source = "sample_range_select")
+            }
+            
+            plt1 %>% plotly::layout(
+                xaxis = list(title = "sample"),
+                yaxis = list(title = input$sample_stats_plt_type))
+        })
         
-        if(!is.null(r_data$group)) {
-            plt1 <- tbl %>% plot_ly(x = sample, y = y, type = "bar", color = as.character(tbl$Group), source = "sample_range_select")
-        } else {
-            plt1 <- tbl %>% plot_ly(x = sample, y = y, type = "bar", source = "sample_range_select")
-        }
-        
-        plt1 %>% plotly::layout(
-            xaxis = list(title = "sample"),
-            yaxis = list(title = input$sample_stats_plt_type))
     })
 })
 

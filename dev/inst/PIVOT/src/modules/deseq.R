@@ -15,10 +15,10 @@
 
 
 output$deseq_ui <- renderUI({
-    if(is.null(r_data$group) || length(unique(r_data$group)) < 2) {
+    if(is.null(r_data$glb.meta)) {
         return(
             list(
-                tags$li("This module requires group (condition) information.")
+                tags$li("This module requires design information input.")
             )
         )
     }

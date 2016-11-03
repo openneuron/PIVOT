@@ -38,9 +38,9 @@ output$data_pv_ui <- renderUI({
     ########## Show data preview #########
     if(input$input_tabset %in% c("file_in")) {
         if(!is.null(r_data$glb.raw)){
-            box(width = NULL,
+            enhanced_box(width = NULL,
                 title = "Dataset for Analysis",
-                status = "success",
+                status = "custom3",
                 solidHeader = T,
                 fluidRow(
                     column(12,
@@ -62,9 +62,9 @@ output$data_pv_ui <- renderUI({
             )
         }
     } else if(input$input_tabset == "feature_in") {
-        box(width = NULL,
+        enhanced_box(width = NULL,
             title = "Feature Statistics",
-            status = "info",
+            status = "custom4",
             solidHeader = T,
             fluidRow(
                 column(12,
@@ -73,15 +73,28 @@ output$data_pv_ui <- renderUI({
                 )
             )
         )
-    } else if(input$input_tabset %in% c("sample_in","group_in")) {
-        box(width = NULL,
+    } else if(input$input_tabset == "sample_in") {
+        enhanced_box(width = NULL,
             title = "Sample Statistics",
-            status = "primary",
+            status = "custom5",
             solidHeader = T,
             fluidRow(
                 column(12,
                        DT::dataTableOutput("input_sample_stats_tbl"),
                        downloadButton("download_sample_stats_tbl", "Download", class = "btn btn-success")
+                )
+            )
+        )
+    } else if(input$input_tabset == "group_in") {
+        enhanced_box(width = NULL,
+            title = "Design Table",
+            status = "custom2",
+            solidHeader = T,
+            fluidRow(
+                column(12,
+                       DT::dataTableOutput("input_design_tbl"),
+                       downloadButton("download_design_tbl", "Download", class = "btn-success btn_rightAlign"),
+                       actionButton('clear_group_1', label = "Clear design", icon = icon("times"), class = "btn-danger btn_rightAlign")
                 )
             )
         )
