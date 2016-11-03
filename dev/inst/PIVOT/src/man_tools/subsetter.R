@@ -41,15 +41,16 @@ output$subset_ui <- renderUI({
         
         conditionalPanel(
             condition = "input.subsetter_type == 'manual'", 
-            tags$div(tags$b("Select Sample:"), class = "param_setting_title"),
             fluidRow(
                 column(6,  
-                       textInput("sample_search", label = "Select sample", value = ""), 
+                       tags$div(tags$b("Subset by Sample:"), class = "param_setting_title"),
+                       textInput("sample_search", label = "Name Filter", value = ""), 
                        uiOutput("manual_select_ui"),
                        uiOutput("manual_subset_btn_ui")
                 ),
                 column(6, 
-                       uiOutput("group_subset_ui")
+                       tags$div(tags$b("Subset by Category:"), class = "param_setting_title"),
+                       uiOutput("category_subset_ui")
                 )
             )
         ),
@@ -390,6 +391,17 @@ output$manual_select_ui <- renderUI({
                 selectize = F,
                 size = inlen,
                 multiple = TRUE)
+})
+
+output$category_subset_ui <- renderUI({
+    if(is.null(r_data$glb.meta) || ncol(r_data$glb.meta) < 2) return()
+    categories = colnames(r_data$glb.meta)[-1]
+    names(categories) <- categories
+    options <- as.list(categories)
+    list(
+        selectInput("category_subset", label = "Choose category", choices = options)
+        #uiOutput("group_subset_ui")
+    )
 })
 
 output$group_subset_ui <- renderUI({

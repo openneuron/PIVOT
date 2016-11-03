@@ -430,7 +430,7 @@ observeEvent(input$submit_design_upload, {
             r_data$df <- r_data$df[r_data$sample_name]
         }
         # Other sanity checks? Like cols contain NA, empty cols(only spaces), cols contain only one category?
-        r_data$glb.meta <- df_tmp
+        r_data$glb.meta <- df_tmp[matched_sp,] # Remove any meta info for non-existing sample in the dataset
         
         incProgress(0.3, detail = "Updating metadata...")
         r_data <- init_meta(r_data, type = "sample")
