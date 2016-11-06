@@ -38,10 +38,6 @@ init_state <- function(r_data) {
     r_data$df <- NULL # This is the filtered DESeq normalized data
     
     r_data$glb.meta <- NULL
-    r_data$glb.group <- NULL
-    r_data$glb.batch <- NULL
-    r_data$group <- NULL # Group info
-    r_data$batch <- NULL # Batch info
     
     r_data$feature_list <- NULL # This contains the filtered feature list used for analysis, every time the user choose a different feature set, the analyzer will grab that set of data using this key
     r_data$sample_name <- NULL # This has same value as sample_key once analyze btn is pressed.
@@ -55,6 +51,7 @@ init_state <- function(r_data) {
     
     r_data$dds <- NULL
     r_data$deseq_results <- NULL
+    r_data$deseq_params <- NULL
     r_data$deseq_group <- NULL
     
     r_data$f_range <- NULL
@@ -209,13 +206,6 @@ shinyServer(function(input, output, session) {
             }
             
             r_data$sample_meta$num_genes_expressed <- colSums(r_data$raw > 0)
-            
-            if(!is.null(r_data$group)){
-                r_data$sample_meta$Group <- r_data$group
-            }
-            if(!is.null(r_data$batch)){
-                r_data$sample_meta$Batch <- r_data$batch
-            }
             
         }
         

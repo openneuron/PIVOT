@@ -284,14 +284,6 @@ switch_to_dataset <- function(r_data, s) {
     r_data$feature_list <- r_data$history[[s]]$lists[[1]]
     r_data$sample_name <- r_data$history[[s]]$lists[[2]]
     
-    if(!is.null(r_data$glb.group)) {
-        r_data$group <- factor(r_data$glb.group[r_data$sample_name])
-    }
-    
-    if(!is.null(r_data$glb.batch)) {
-        r_data$batch <- factor(r_data$glb.batch[r_data$sample_name])
-    }
-    
     r_data$raw <- r_data$glb.raw[r_data$feature_list, r_data$sample_name]
     r_data$norm_param <- r_data$history[[s]]$norm_param
     r_data$df <- r_data$history[[s]]$lists[[3]] # This might take some memory, but for now it's the best solution

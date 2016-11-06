@@ -149,13 +149,7 @@ clear_design <- function() {
         design_value <- NULL
     }
     
-    plot_specs$info <- NULL
-    
     r_data$glb.meta <- data.frame(sample = colnames(r_data$glb.raw))
-    r_data$group <- NULL
-    r_data$glb.group <- NULL
-    r_data$batch <- NULL
-    r_data$glb.batch <- NULL
     
     clear_results()
 }
@@ -168,6 +162,7 @@ clear_results <-function() {
     r_data$dds_gene <- NULL
     
     r_data$deseq_results <- NULL
+    r_data$deseq_params <- NULL
     r_data$deseq_group <- NULL
     
     r_data$scde_ifm<-NULL
@@ -517,101 +512,5 @@ get_color_vector <- function(labels, pal="Set1", maxCol=9)
 }
 
 
-output$sample_coloring_ui <- renderUI({
-    if(is.null(r_data$group) && is.null(r_data$batch) && is.null(r_data$community)) return()
-    
-    coloring_choices <- list("none" = "none")
-    if(!is.null(r_data$group))
-        coloring_choices$group <- "group"
-    if(!is.null(r_data$batch))
-        coloring_choices$batch <- "batch"
-    if(!is.null(r_data$community))
-        coloring_choices$community <- "community"
-    if(length(coloring_choices)) {
-        list(
-            sidebarwell2(
-                selectInput("coloring_type", "Color samples by", choices = coloring_choices),
-                actionButton("group_color_switcher", label = "Change Color", class = "sidebar-button")
-            )
-        )
-    }
-})
-
-group_pal <- reactiveValues()
-group_pal$val <- "Set1"
-group_pal$idx <- 1
-
-observeEvent(input$group_color_switcher, {
-    colvec <- c("Set1", "Dark2", "RdYlGn", "Paired")
-    group_pal$idx <- (group_pal$idx + 1) %% (length(colvec))
-    if(group_pal$idx == 0) {
-        group_pal$val  <- colvec[length(colvec)]
-    } else {
-        group_pal$val  <- colvec[group_pal$idx]
-    }
-})
-
-group_color <- reactive({
-    if(is.null(r_data$group)) return(NULL)
-    get_color_vector(r_data$group, pal = group_pal$val, maxCol = length(unique(r_data$group)))
-})
-
-group_color_legend <- reactive({
-    if(is.null(r_data$group)) return(NULL)
-    tmp_gc <- unique(group_color())
-    tmp_name <- unique(r_data$group)
-    names(tmp_gc) <- tmp_name
-    tmp_gc
-})
-
-batch_color <- reactive({
-    if(is.null(r_data$batch)) return(NULL)
-    get_color_vector(r_data$batch, pal = group_pal$val, maxCol = length(unique(r_data$batch)))
-})
-
-batch_color_legend <- reactive({
-    if(is.null(r_data$batch)) return(NULL)
-    tmp_gc <- unique(batch_color())
-    tmp_name <- unique(r_data$batch)
-    names(tmp_gc) <- tmp_name
-    tmp_gc
-})
-
-community_color <- reactive({
-    if(is.null(r_data$community)) return(NULL)
-    get_color_vector(r_data$community, pal = group_pal$val, maxCol = length(unique(r_data$community)))
-})
-
-community_color_legend <- reactive({
-    if(is.null(r_data$community)) return(NULL)
-    tmp_gc <- unique(community_color())
-    tmp_name <- unique(r_data$community)
-    names(tmp_gc) <- tmp_name
-    tmp_gc
-})
 
 
-plot_specs <- reactiveValues()
-plot_specs$info <- NULL
-plot_specs$color <- NULL
-plot_specs$color_legend <- NULL
-
-observe({
-    if(!is.null(input$coloring_type)) {
-        if(input$coloring_type == "group"){
-            plot_specs$info <- r_data$group
-            plot_specs$color <- group_color()
-            plot_specs$legend_color <- group_color_legend()
-        } else if (input$coloring_type == "batch") {
-            plot_specs$info <- r_data$batch
-            plot_specs$color <- batch_color()
-            plot_specs$legend_color <- batch_color_legend()
-        } else if (input$coloring_type == "community") {
-            plot_specs$info <- r_data$community
-            plot_specs$color <- community_color()
-            plot_specs$legend_color <- community_color_legend()
-        } else if(input$coloring_type == "none") {
-            plot_specs$info <- NULL
-        }
-    }
-})

@@ -48,8 +48,8 @@ sidebar <- dashboardSidebar(
                          menuSubItem("ERCC", tabName = "ercc", icon =  icon("angle-right"))
                 ),
                 menuItem("Differential Expression", icon = icon("eyedropper"),
-                         menuSubItem("SCDE", tabName = "scde", icon = icon("angle-right")),
                          menuSubItem("DESeq", tabName = "deseq", icon = icon("angle-right")),
+                         menuSubItem("SCDE", tabName = "scde", icon = icon("angle-right")),
                          menuSubItem("Mann–Whitney U test", tabName = "mww", icon = icon("angle-right"))
                 ),
                 menuItem("Monocle", icon = icon("umbrella"),
@@ -112,13 +112,6 @@ sidebar <- dashboardSidebar(
                                 numericInput("idv_seed", label = "Set seed", value = 1, min = 1, max = 5000, step = 1) 
                            )
                     )
-    ),
-    
-    conditionalPanel("input.tabs == 'heatmap' || input.tabs == 'correlation_hm' || input.tabs == 'pca' || input.tabs == 'tsne' || input.tabs == 'plda' || input.tabs == 'hclust' || input.tabs == 'community'",
-                     column(1),
-                     column(10,
-                            uiOutput("sample_coloring_ui")
-                     )
     ),
     
     conditionalPanel("input.tabs == 'cor_ft'",

@@ -204,9 +204,9 @@ body <- dashboardBody(
                             valueBoxOutput_custom("input_file_box", width = 2, style = "padding-right:2px; padding-left: 10px;"),
                             valueBoxOutput_custom("feature_number_box", width = 2, style = "padding-right:2px; padding-left: 2px;"),
                             valueBoxOutput_custom("feature_percent_box", width = 2, style = "padding-right:2px; padding-left: 2px;"),
+                            valueBoxOutput_custom("read_percent_box", width = 2, style = "padding-right:2px; padding-left: 2px;"),
                             valueBoxOutput_custom("sample_number_box", width = 2, style = "padding-right:2px; padding-left: 2px;"),
-                            valueBoxOutput_custom("group_number_box", width = 2, style = "padding-right:2px; padding-left: 2px;"),
-                            valueBoxOutput_custom("batch_number_box", width = 2, style = "padding-right:10px; padding-left: 2px;")
+                            valueBoxOutput_custom("cat_number_box", width = 2, style = "padding-right:10px; padding-left: 2px;")
                         )
                     )
                 ),

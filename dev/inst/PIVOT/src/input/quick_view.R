@@ -48,6 +48,12 @@ output$feature_percent_box <- renderValueBox({
     )
 })
 
+output$read_percent_box <- renderValueBox({
+    valueBox(
+        paste0(round(sum(r_data$raw)/sum(r_data$glb.raw), digits = 3) * 100, "%"), "of all reads", icon = icon("server"), color = "teal"
+    )
+})
+
 output$sample_number_box <- renderValueBox({
     if(is.null(r_data$raw)) {
         valueBox(
@@ -60,15 +66,10 @@ output$sample_number_box <- renderValueBox({
     }
 })
 
-output$group_number_box <- renderValueBox({
-    valueBox(
-        length(unique(r_data$group)), "specified groups", icon = icon("group"), color = "teal"
-    )
-})
 
-output$batch_number_box <- renderValueBox({
+output$cat_number_box <- renderValueBox({
     valueBox(
-        length(unique(r_data$batch)), "specified batches", icon = icon("th-large"), color = "aqua"
+        ncol(r_data$glb.meta) - 1, "design categories", icon = icon("sitemap"), color = "aqua"
     )
 })
 

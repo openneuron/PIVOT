@@ -150,7 +150,7 @@ output$transdiff_ui <- renderUI({
         gene_choices <- c(gene_choices, setNames(list("scde"), group_string))
     }
     
-    if(!is.null(r_data$deseq_results) && !("deseq" %in% gene_choices)) {
+    if(!is.null(r_data$deseq_results) && !("deseq" %in% gene_choices) && r_data$deseq_params$test != "LRT") {
         group_string <- paste("DE genes of Group", r_data$deseq_group[1], "and Group",  r_data$deseq_group[2], "reported by DESeq")
         gene_choices <- c(gene_choices, setNames(list("deseq"), group_string))
     }
@@ -344,7 +344,7 @@ observe({
     if(is.null(input$tf_de_select)) return()
     if(input$tf_de_select == "scde") {
         r_data$tf_group <- unique(r_data$scde_group)
-    } else if(input$tf_de_select == "deseq") {
+    } else if(input$tf_de_select == "deseq" && r_data$deseq_params$timecourse != "LRT") {
         r_data$tf_group <- unique(r_data$deseq_group)
     } else if(input$tf_de_select == "mww") {
         r_data$tf_group <- unique(r_data$mww_group)

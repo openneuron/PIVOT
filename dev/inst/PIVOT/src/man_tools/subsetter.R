@@ -49,7 +49,6 @@ output$subset_ui <- renderUI({
                        uiOutput("manual_subset_btn_ui")
                 ),
                 column(6, 
-                       tags$div(tags$b("Subset by Category:"), class = "param_setting_title"),
                        uiOutput("category_subset_ui")
                 )
             )
@@ -212,7 +211,7 @@ output$sample_stats_plot <- renderPlotly({
             tbl <- r_data$sample_meta %>% tibble::rownames_to_column("sample") 
             colnames(tbl)[which(colnames(tbl) == input$sample_stats_plt_type)] <- "y"
             if(!is.null(input$sample_stats_group) && input$sample_stats_group != "None") {
-                tbl$Group <- r_data$glb.meta[,input$sample_stats_group][match(tbl$sample,r_data$glb.meta$sample)]
+                tbl$Group <- r_data$glb.meta[,input$sample_stats_group][match(tbl$sample,r_data$glb.meta[,1])]
                 plt1 <- tbl %>% plot_ly(x = sample, y = y, type = "bar", color = as.character(tbl$Group), source = "sample_range_select")
             } else {
                 plt1 <- tbl %>% plot_ly(x = sample, y = y, type = "bar", source = "sample_range_select")
@@ -374,8 +373,9 @@ output$manual_select_ui <- renderUI({
     if(is.null(r_data$glb.raw)) return()
     sample_lis <- grep(input$sample_search, colnames(r_data$glb.raw), value = "TRUE")
 
-    if(!is.null(r_data$glb.group) && !is.null(input$group_subset_input)) {
-        sample_lis <- names(r_data$glb.group[which(r_data$glb.group %in% input$group_subset_input)])
+    if(!is.null(r_data$glb.meta) && !is.null(input$category_subset) && !is.null(input$group_subset_input)) {
+        samples <- r_data$glb.meta[,1]
+        sample_lis <- samples[which(r_data$glb.meta[, input$category_subset] %in% input$group_subset_input)]
     }
     
     if(length(sample_lis) <= 20) {
@@ -399,21 +399,21 @@ output$category_subset_ui <- renderUI({
     names(categories) <- categories
     options <- as.list(categories)
     list(
-        selectInput("category_subset", label = "Choose category", choices = options)
-        #uiOutput("group_subset_ui")
+        tags$div(tags$b("Subset by Category:"), class = "param_setting_title"),
+        selectInput("category_subset", label = "Choose category", choices = options),
+        uiOutput("group_subset_ui")
     )
 })
 
 output$group_subset_ui <- renderUI({
-    if(is.null(r_data$glb.group)) return()
-    group_lis <- as.character(unique(r_data$glb.group))
+    if(is.null(r_data$glb.meta) || ncol(r_data$glb.meta) < 2 || is.null(input$category_subset)) return() # Redundant conditions to prevent error when change meta file
+    group_lis <- as.character(unique(r_data$glb.meta[, input$category_subset]))
     
     if(length(group_lis) <= 20) {
         inlen <- length(group_lis)
     } else {
         inlen <- 20
     }
-    
     list(
         selectInput('group_subset_input', 
                     label = "Select Group", 
@@ -431,13 +431,13 @@ output$manual_subset_btn_ui <- renderUI ({
     negf <- as.logical(input$is_neg_subsetter)
     rnorm <- as.logical(input$subsetter_renormalize)
     if(!negf && !rnorm) {
-        actionButton('manual_subset_btn', label = "Select", class = "btn btn-info")
+        actionButton('manual_subset_btn', label = "Select", class = "btn-info btn_rightAlign")
     } else if(negf && !rnorm) {
-        actionButton('manual_subset_btn', label = "Delete", class = "btn btn-info")
+        actionButton('manual_subset_btn', label = "Delete", class = "btn-info btn_rightAlign")
     } else if(!negf && rnorm) {
-        actionButton('manual_subset_btn', label = "Select & Renorm", class = "btn btn-info")
+        actionButton('manual_subset_btn', label = "Select & Renorm", class = "btn-info btn_rightAlign")
     } else if(negf && rnorm) {
-        actionButton('manual_subset_btn', label = "Delete & Renorm", class = "btn btn-info")
+        actionButton('manual_subset_btn', label = "Delete & Renorm", class = "btn-info btn_rightAlign")
     }
 })
 
@@ -446,7 +446,7 @@ observeEvent(input$manual_subset_btn, {
     rnorm <- as.logical(input$subsetter_renormalize)
     
     if(is.null(input$sample_subset_input)){
-        session$sendCustomMessage(type = "showalert", "Give me something!")
+        session$sendCustomMessage(type = "showalert", "No sample selected!")
         return()
     } else if ((length(input$sample_subset_input) < 2 && !negf) || ((length(colnames(r_data$glb.raw)) - length(input$sample_subset_input)) < 2 && negf)){
         session$sendCustomMessage(type = "showalert", "Too few samples left!")
@@ -596,7 +596,7 @@ observeEvent(input$file_subset_btn, {
     error_I <- 0
     if (is.null(inFile))
     {
-        session$sendCustomMessage(type = "showalert", "Give me something!")
+        session$sendCustomMessage(type = "showalert", "Please upload a sample sheet.")
         return(NULL)
     }
     tryCatch({sample_tbl <- read.csv(inFile$datapath, header=input$sb_header, sep=input$sb_sep, quote=input$sb_quote)},
