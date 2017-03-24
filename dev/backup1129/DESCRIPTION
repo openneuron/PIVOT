@@ -1,0 +1,18 @@
+Package: PIVOT.old
+Title: PIVOT.old
+Version: 1.04
+Authors: Qin Zhu, Hannah Dueck, Sarah Middleton, Stephen Fisher, Mugdha
+        Khaladkar, Young-ji Na, Junhyong Kim
+Maintainer: Junhyong Kim <junhyong@sas.upenn.edu>
+Description: Fast data analysis and interactive visualization for RNA seq data.
+Depends: R (>= 3.2.1), shiny, shinyBS, ggvis, shinydashboard, ggplot2,
+        igraph, shinyFiles, visNetwork, dplyr, monocle
+Imports: STRINGdb, shinyAce, networkD3, d3heatmap, threejs, DT,
+        rmarkdown, Rtsne, RColorBrewer, DESeq2, dendextend, gplots,
+        caret, ggbiplot, knitr, lubridate, pryr, scde, boot, vsn,
+        networkD3, VennDiagram, plotly, edgeR
+Suggests: Seurat
+License: Kim Lab License (http://kim.bio.upenn.edu/software/LICENSE)
+RoxygenNote: 6.0.0
+NeedsCompilation: no
+Packaged: 2016-09-02 20:53:00 UTC; zhuqin

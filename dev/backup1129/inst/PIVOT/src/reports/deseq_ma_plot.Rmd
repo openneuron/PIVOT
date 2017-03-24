@@ -1,0 +1,13 @@
+
+
+# DESeq MA Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 10, fig.height = 8}
+if(is.null(r_data$deseq_results)) return()
+    if(input$deseq_ma_shrunk == "shrunken") {
+        BiocGenerics::plotMA(r_data$deseq_results, main="DESeq2", ylim=c(-2,2))
+    } else {
+        BiocGenerics::plotMA(r_data$deseq_results, MLE=TRUE, main="unshrunken LFC", ylim=c(-2,2))
+    }
+```
+

@@ -1,0 +1,38 @@
+
+# Community Detection with Minimum Spanning Tree
+
+**Distance measure:** `r input$mst_dist_method`
+
+**Community Detection Algorithm:** `r input$com_algorithm`
+
+**Walktrap Steps:** `r input$com_wt_step`
+
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+     if(is.null(graph0())) return()
+    mst0 <-igraph::minimum.spanning.tree(graph0(), weights = igraph::E(graph0())$weight)
+    
+    if(!is.null(input$com_algorithm)) # Perform community detection
+    {
+        if(input$com_algorithm == "walktrap") {
+            coms <- igraph::cluster_walktrap(mst0, steps = input$com_wt_step, merges = TRUE, modularity = TRUE, membership = TRUE)
+            r_data$community <- paste0("community_",as.character(igraph::membership(coms)))
+        }
+    }
+    
+    label <- NA
+    if(input$mst_lbl) {
+        label <- V(mst0)$label
+    }
+    
+    if(!is.null(plot_specs$info))
+        V(mst0)$color <- plot_specs$color
+    
+    if(!is.null(input$color_com) && input$color_com) {
+        igraph::plot.igraph(mst0, vertex.label=label, vertex.size=input$vertex_size, mark.groups = coms)
+    } else {
+        igraph::plot.igraph(mst0, vertex.label=label, vertex.size=input$vertex_size)
+    }
+    
+        
+```

@@ -1,0 +1,39 @@
+
+# SCDE DE Result
+
+### `r paste("Differential Expression Test Results of", unique(r_data$scde_group)[1], "vs", unique(r_data$scde_group)[2])`
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+ if(is.null(r_data$scde_ediff)) return()
+    
+    if(!is.null(r_data$scde_batch)) { # If batch correction applied, it returns a list containing 3 dataframes rather than a single dataframe
+        tbl <- r_data$scde_ediff[[input$scde_batch_ediff_choice]]
+    } else {
+        tbl <-r_data$scde_ediff
+    }
+    
+    tbl <- tbl %>% tibble::rownames_to_column("feature") %>% dplyr::mutate(p.values = 2*pnorm(abs(tbl$Z),lower.tail=F)) %>% dplyr::mutate(p.values.adj = 2*pnorm(abs(tbl$cZ),lower.tail=F))
+    if(input$scde_cuttbl) {
+        tbl <- subset(tbl, p.values.adj <= input$scde_alpha)
+    }
+    rownames(tbl) <- tbl$feature
+    tbl <- tbl %>% dplyr::select(-feature)
+    if(nrow(tbl) == 0) return()
+    DT::datatable(tbl, selection = 'single', options = list(scrollX = TRUE, scrollY = "210px", searching=T, order = list(list(8, 'asc')), orderClasses = T))
+    
+```
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+if(is.null(r_data$scde_ediff)) return()
+    
+    if(!is.null(r_data$scde_batch)) { # If batch correction applied, it returns a list containing 3 dataframes rather than a single dataframe
+        tbl <- r_data$scde_ediff[[input$scde_batch_ediff_choice]]
+    } else {
+        tbl <-r_data$scde_ediff
+    }
+    tbl <- tbl %>% tibble::rownames_to_column("gene") %>% dplyr::mutate(p.values = 2*pnorm(abs(tbl$Z),lower.tail=F)) %>% dplyr::mutate(p.values.adj = 2*pnorm(abs(tbl$cZ),lower.tail=F))
+
+    print(paste0("Total number of significant genes: ", sum(tbl$p.values.adj < input$scde_alpha, na.rm = T), "."))
+```
+
+

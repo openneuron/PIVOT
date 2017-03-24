@@ -1,0 +1,21 @@
+
+## Penalized LDA 2D Projection Plot
+
+```{r echo = FALSE, warning=FALSE, message = FALSE, fig.width = 8, fig.height = 6}
+ projection <- as.data.frame(r_data$plda$proj) 
+        group_color <- get_color_vector(r_data$group, pal = group_pal$val, maxCol = length(unique(r_data$group)))
+        cols<-unique(group_color)
+        names(cols) <- unique(r_data$group)
+        
+        projection %>% 
+            tibble::rownames_to_column() %>%
+            ggvis(x = prop("x", as.symbol(input$plda_2d_x)), y = prop("y", as.symbol(input$plda_2d_y)), key := ~rowname) %>%
+            add_tooltip(d2_tooltip, "hover") %>%
+            add_axis("x", title = input$plda_2d_x) %>% 
+            add_axis("y", title = input$plda_2d_y) %>%
+            set_options(width = 450, height = 300) %>%
+            layer_points(fill = ~group, stroke:= "grey", size := 50, size.hover := 200, fillOpacity := 0.6, fillOpacity.hover := 0.9, stroke.hover := "orange") %>% 
+            add_legend("fill", title = input$coloring_type) %>%
+            scale_nominal("fill", range = unique(group_color))
+```
+
