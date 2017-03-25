@@ -4,10 +4,22 @@
   * See http://kim.bio.upenn.edu/software/idv.shtml for more details.
 
 * Installation
-  * Please use the following command to install in R.
+  * Please copy and paste the following command to R console.
+  ```
+# Load 
+install.packages("devtools")
+library("devtools")
+source("http://bioconductor.org/biocLite.R")  
+
+# Install PIVOT
+install_github("qinzhu/PIVOT.data")
+install_github("qinzhu/PIVOT.analysis")
+install_github("qinzhu/PIVOT.launcher")
+```
   
 * Running PIVOT
   * Note you MUST launch PIVOT with Rstudio.
+  * To run PIVOT, in Rstudio console, use command `pivot()`
 
 * Citation
 
