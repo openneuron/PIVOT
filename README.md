@@ -1,6 +1,14 @@
 # PIVOT: Platform for Interactive analysis and Visualization Of Transcriptomics data
 
 ## About this package
+This program is developed based on the Shiny framework, a set of R packages and a 
+collection of scripts written by members of Junhyong Kim Lab at University of Pennsylvania. 
+Its goal is to facilitate fast and interactive RNA-Seq data analysis and visualization. 
+Current version of PIVOT supports routine RNA-Seq data analysis including normalization, 
+differential expression analysis, dimension reduction, correlation analysis, clustering and 
+classification. Users can complete workflows of DESeq2, monocle and scde package with
+just a few button clicks. All analysis reports can be exported, and the program state can be
+saved, loaded and shared.
   * See http://kim.bio.upenn.edu/software/idv.shtml for more details.
 
 ## Installation
