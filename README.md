@@ -22,6 +22,10 @@ install_github("qinzhu/PIVOT.launcher")
   * Note you MUST launch PIVOT with Rstudio.
   * To run PIVOT, in Rstudio console, use command `pivot()`
 
+## Troubleshooting
+ * URL 'http://xxx.tgz': status was '404 Not Found'
+   * Call `chooseCRANmirror()` to select another CRAN mirror.
+
 ## Citation
 
 Qin Zhu, Stephen A Fisher, Hannah Dueck, Sarah Middleton, Mugdha Khaladkar, Young-Ji Na, Junhyong Kim KimLabIDV?: Application for Interactive RNA-Seq Data Analysis and Visualization (Preprint) bioRxiv 053348; doi: http://dx.doi.org/10.1101/053348
