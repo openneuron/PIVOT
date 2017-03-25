@@ -18,8 +18,8 @@ install_github("qinzhu/PIVOT.analysis")
 install_github("qinzhu/PIVOT.launcher")
 ```
  * (Optional but strongly recommended) Dependencies:
-  * For report generation, you need Pandoc: http://pandoc.org/installing.html
-  * For PDF report generation, you need Latex: https://www.latex-project.org/get/
+   * For report generation, you need Pandoc: http://pandoc.org/installing.html
+   * For PDF report generation, you need Latex: https://www.latex-project.org/get/
 
 ## Running PIVOT
   * Note you MUST launch PIVOT with Rstudio.
@@ -34,7 +34,7 @@ pivot()
    * Call `chooseCRANmirror()` to select another CRAN mirror.
    
  * Current Known bug:
-  * Some times when user press the "launch module" or "clean session" button, new window does not show up. In such cases, please call the last command you see in Rstudio, i.e., `pivot_main()` or `pivot('clean')`
+   * Some times when user press the "launch module" or "clean session" button, new window does not show up. In such cases, please call the last command you see in Rstudio, i.e., `pivot_main()` or `pivot('clean')`
 
 ## Citation
 
