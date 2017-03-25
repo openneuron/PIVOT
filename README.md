@@ -5,7 +5,8 @@
 
 * Installation
   * Please copy and paste the following command to R console.
-  ```
+
+```
 # Load 
 install.packages("devtools")
 library("devtools")
