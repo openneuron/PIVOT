@@ -4,7 +4,7 @@
   * See http://kim.bio.upenn.edu/software/idv.shtml for more details.
 
 ## Installation
-  * Main Program: Please copy and paste the following command to R console.
+  * Main Program: Please copy and paste the following command to R console. Upgrading R and Rstudio to the latest version is strongly recommended.
 
 ```
 # Load 
