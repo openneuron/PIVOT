@@ -43,6 +43,8 @@ pivot()
    
  * Current Known bug:
    * Some times when user press the "launch module" or "clean session" button, new window does not show up. In such cases, please call the last command you see in Rstudio, i.e., `pivot_main()` or `pivot('clean')`
+   
+ * If you run into other bugs, please report them in github, or email me directly (qinzhu@outlook.com). Thanks!
 
 ## Citation
 
