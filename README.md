@@ -46,8 +46,9 @@ pivot()
 
 ## Citation
 
-Qin Zhu, Stephen A Fisher, Hannah Dueck, Sarah Middleton, Mugdha Khaladkar, Young-Ji Na, Junhyong Kim KimLabIDV: Application for Interactive RNA-Seq Data Analysis and Visualization (Preprint) bioRxiv 053348; doi: http://dx.doi.org/10.1101/053348
+* Qin Zhu, Stephen A Fisher, Hannah Dueck, Sarah Middleton, Mugdha Khaladkar, Young-Ji Na, Junhyong Kim KimLabIDV: Application for Interactive RNA-Seq Data Analysis and Visualization (Preprint) bioRxiv 053348; doi: http://dx.doi.org/10.1101/053348
 
+* For specific analysis, please check the citation listed in the module.
 
 Qin Zhu
 
