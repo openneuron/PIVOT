@@ -12,7 +12,8 @@ saved, loaded and shared.
   * See http://kim.bio.upenn.edu/software/idv.shtml for more details.
 
 ## Installation
-  * Main Program: Please copy and paste the following command to R console. Upgrading R and Rstudio to the latest version is strongly recommended.
+  * Main Program: Please copy and paste the following command to R console. 
+  * Upgrading R and Rstudio to the latest version (R > 3.2, Rstudio > 1.0.0) is strongly recommended. 
 
 ```
 # Load 
